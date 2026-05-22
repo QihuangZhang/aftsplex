@@ -1,0 +1,38 @@
+Package: aftsplex
+Title: AFT + Spline + SIMEX for Nonlinear Dose-Response with Multivariate Measurement Error
+Version: 0.1.0
+Authors@R:
+    person("Qihuang", "Zhang",
+           email = "qihuang.zhang@mcgill.ca",
+           role = c("aut", "cre"))
+Description: Accelerated-failure-time models with natural-cubic-spline dose-response,
+    corrected for additive measurement error in a multivariate surrogate via a
+    generalised-least-squares (GLS) combiner and the simulation-extrapolation
+    (SIMEX) method of Cook and Stefanski (1994). The package implements a
+    Phase-1 / Phase-2 calibration--inference workflow with a two-stage
+    nonparametric bootstrap that propagates uncertainty from both the
+    validation and main-study samples. Originally developed for the
+    Light-Physical-Activity / Myocardial-Infarction analysis on UK Biobank
+    accelerometer data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: false
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1)
+Imports:
+    survival,
+    splines,
+    MASS,
+    stats,
+    utils
+Suggests:
+    ggplot2,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+URL: https://qihuangzhang.github.io/aftsplex/, https://github.com/QihuangZhang/aftsplex
+BugReports: https://github.com/QihuangZhang/aftsplex/issues

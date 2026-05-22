@@ -1,0 +1,99 @@
+---
+title: "Quick start: AFT + spline + SIMEX in 30 lines"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Quick start: AFT + spline + SIMEX in 30 lines}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width = 6, fig.height = 4
+)
+```
+
+This vignette walks through one end-to-end fit on simulated data, taking
+under ten seconds on a laptop. The intended workflow on real data is the
+same: a small-validation Phase-1 fit, GLS-combined exposure on the main
+study, SIMEX correction, and a two-stage bootstrap for inference.
+
+```{r setup}
+library(aftsplex)
+```
+
+## Simulate
+
+`generate_aft_data()` returns a list with a main-study survival data frame,
+a validation data frame, and the truth used to generate them.
+
+```{r sim}
+sim <- generate_aft_data(n = 1000, n_val = 300, seed = 1)
+head(sim$survival, 3)
+```
+
+## Phase-1 calibration
+
+```{r phase1}
+cal <- fit_me_calibration(sim$validation)
+cal$alpha1                # close to 1: surrogate is unbiased for truth
+round(cal$Sigma_e, 2)
+```
+
+`gls_combine()` collapses the three correlated surrogates into a single
+calibrated exposure with conditional variance `sigma_w_sq`.
+
+```{r gls}
+W <- as.matrix(sim$survival[, cal$W_cols])
+g <- gls_combine(W, cal)
+dat <- sim$survival
+dat$W_bar <- g$W_bar
+round(g$sigma_w_sq, 3)
+```
+
+## SIMEX point estimate
+
+```{r simex}
+x_grid <- seq(quantile(g$W_bar, 0.02),
+              quantile(g$W_bar, 0.98), length.out = 50)
+
+s <- simex_aft_spline(
+  dat, x_var = "W_bar", sigma_w_sq = g$sigma_w_sq,
+  covariates = c("V1","V2","V3","V4"),
+  v_ref = c(V1 = 30, V2 = 30, V3 = 0, V4 = 0),
+  lambda = c(0.5, 1, 1.5, 2), B = 10,
+  x_grid = x_grid
+)
+```
+
+## Two-stage bootstrap interval
+
+`two_stage_bootstrap()` runs the SIMEX pipeline inside an outer loop that
+resamples both the validation and the main-study data, so its interval
+propagates Phase-1 and Phase-2 sampling variation jointly.
+
+```{r boot}
+set.seed(1)
+boot <- two_stage_bootstrap(
+  survival   = sim$survival,
+  validation = sim$validation,
+  x_var      = "X_true",                # truth column for calibration
+  covariates = c("V1","V2","V3","V4"),
+  v_ref      = c(V1 = 30, V2 = 30, V3 = 0, V4 = 0),
+  lambda     = c(0.5, 1, 1.5, 2), B = 10, R = 30,
+  x_grid     = x_grid,
+  verbose    = FALSE
+)
+```
+
+## Plot
+
+```{r plot, eval = requireNamespace("ggplot2", quietly = TRUE)}
+truth <- f_true(x_grid) - f_true(x_grid[1])
+fits  <- list(SIMEX = boot$f_hat)
+plot_curves(x_grid, truth, fits,
+            ci = list(lower = boot$lower, upper = boot$upper),
+            title = "SIMEX-corrected dose-response with two-stage bootstrap CI")
+```

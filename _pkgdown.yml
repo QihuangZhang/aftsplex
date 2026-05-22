@@ -1,0 +1,59 @@
+url: https://qihuangzhang.github.io/aftsplex/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#3d405b"     # StaGILL TwilightIndigo
+    base_font: {google: "Source Sans Pro"}
+    heading_font: {google: "Source Sans Pro"}
+    code_font: {google: "JetBrains Mono"}
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [search, github]
+
+reference:
+  - title: Data-generating process
+    desc: Helpers for the simulation studies used in the manuscript.
+    contents:
+      - f_true
+      - build_sigma_u
+      - generate_aft_data
+
+  - title: Phase 1 — Measurement-error calibration
+    desc: Multivariate ME model and the GLS combiner.
+    contents:
+      - fit_me_calibration
+      - gls_combine
+      - extract_surrogate_cols
+
+  - title: Phase 2 — AFT-spline fitting and SIMEX
+    desc: The estimator pipeline.
+    contents:
+      - fit_aft_spline
+      - predict_curve
+      - simex_aft_spline
+
+  - title: Inference — two-stage bootstrap
+    contents:
+      - two_stage_bootstrap
+
+  - title: Evaluation and visualisation
+    contents:
+      - compute_ise
+      - plot_curves
+      - stagill_palette
+      - method_colors
+
+articles:
+  - title: Get started
+    navbar: ~
+    contents:
+      - quickstart
+  - title: Manuscript-aligned diagnostics
+    navbar: ~
+    contents:
+      - simulation-study
+      - coverage-diagnostics

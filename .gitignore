@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.tar.gz
+*.Rcheck/
+docs/
+inst/doc/
+inst/extdata/*.rds
+/doc/
+/Meta/
+_dev_*.R
+build/
+
