@@ -18,14 +18,14 @@ knitr::opts_chunk$set(
 This vignette walks through one end-to-end fit on simulated data. The
 intended workflow on real data is the same four-stage pipeline:
 
-1. **Phase-1 calibration** of the measurement-error model on a small
+1. **Phase-1: Parameter estimation** of the measurement-error model on a small
    validation sample where both the truth `X` and the surrogates
    `W_1, ..., W_J` are observed.
-2. **GLS combination** of the surrogates on the main study into a
+2. **Phase-1: GLS aggregation** of the surrogates on the main study into a
    single calibrated exposure `W_bar` with a known conditional variance.
-3. **SIMEX correction** of an AFT-spline dose-response fitted on
+3. **Phase-2: SIMEX correction** of an AFT-spline dose-response fitted on
    `W_bar`, which extrapolates back to the zero-error fit.
-4. **Two-stage bootstrap** that resamples both the validation sample
+4. **Phase-2:Two-stage bootstrap** that resamples both the validation sample
    and the main study, so the resulting confidence band reflects
    uncertainty from *both* phases.
 
@@ -45,7 +45,7 @@ sim <- generate_aft_data(n = 1000, n_val = 300, seed = 2026)
 head(sim$survival, 3)
 ```
 
-## Phase-1 calibration
+## Phase-1: Parameter estimation and surrogates aggregation
 
 `fit_me_calibration()` estimates the classical multivariate
 measurement-error model
@@ -80,7 +80,7 @@ dat$W_bar <- g$W_bar
 round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
 ```
 
-## SIMEX point estimate
+## Phase-2: SIMEX point estimate
 
 SIMEX (simulation-extrapolation) corrects the bias that arises from
 fitting the AFT-spline on the noisy `W_bar` instead of the unobserved
@@ -136,7 +136,7 @@ plot(s, truth = truth,
      title = "SIMEX-corrected dose-response (point estimate, B = 100)")
 ```
 
-## Two-stage bootstrap interval
+## Phase-2: Uncertainty quantification with two-stage bootstrap
 
 A naive bootstrap of the main study alone underestimates uncertainty
 because it ignores the variability in the Phase-1 calibration. The
