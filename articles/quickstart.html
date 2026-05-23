@@ -72,19 +72,20 @@
 intended workflow on real data is the same four-stage pipeline:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Phase-1 calibration</strong> of the measurement-error model
-on a small validation sample where both the truth <code>X</code> and the
-surrogates <code>W_1, ..., W_J</code> are observed.</li>
+<strong>Phase-1: Parameter estimation</strong> of the
+measurement-error model on a small validation sample where both the
+truth <code>X</code> and the surrogates <code>W_1, ..., W_J</code> are
+observed.</li>
 <li>
-<strong>GLS combination</strong> of the surrogates on the main study
-into a single calibrated exposure <code>W_bar</code> with a known
-conditional variance.</li>
+<strong>Phase-1: GLS aggregation</strong> of the surrogates on the
+main study into a single calibrated exposure <code>W_bar</code> with a
+known conditional variance.</li>
 <li>
-<strong>SIMEX correction</strong> of an AFT-spline dose-response
-fitted on <code>W_bar</code>, which extrapolates back to the zero-error
-fit.</li>
+<strong>Phase-2: SIMEX correction</strong> of an AFT-spline
+dose-response fitted on <code>W_bar</code>, which extrapolates back to
+the zero-error fit.</li>
 <li>
-<strong>Two-stage bootstrap</strong> that resamples both the
+<strong>Phase-2:Two-stage bootstrap</strong> that resamples both the
 validation sample and the main study, so the resulting confidence band
 reflects uncertainty from <em>both</em> phases.</li>
 </ol>
@@ -107,7 +108,7 @@ three noisy surrogates <code>W1, W2, W3</code> are.</p>
 <span><span class="co">#&gt; 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="phase-1-calibration">Phase-1 calibration<a class="anchor" aria-label="anchor" href="#phase-1-calibration"></a>
+<h2 id="phase-1-parameter-estimation-and-surrogates-aggregation">Phase-1: Parameter estimation and surrogates aggregation<a class="anchor" aria-label="anchor" href="#phase-1-parameter-estimation-and-surrogates-aggregation"></a>
 </h2>
 <p><code><a href="../reference/fit_me_calibration.html">fit_me_calibration()</a></code> estimates the classical
 multivariate measurement-error model</p>
@@ -143,7 +144,7 @@ variance that SIMEX needs in the next step.</p>
 <span><span class="co">#&gt; [1] 1.42</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="simex-point-estimate">SIMEX point estimate<a class="anchor" aria-label="anchor" href="#simex-point-estimate"></a>
+<h2 id="phase-2-simex-point-estimate">Phase-2: SIMEX point estimate<a class="anchor" aria-label="anchor" href="#phase-2-simex-point-estimate"></a>
 </h2>
 <p>SIMEX (simulation-extrapolation) corrects the bias that arises from
 fitting the AFT-spline on the noisy <code>W_bar</code> instead of the
@@ -220,7 +221,7 @@ omit it.</p>
 <p><img src="quickstart_files/figure-html/plot_simex-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level2">
-<h2 id="two-stage-bootstrap-interval">Two-stage bootstrap interval<a class="anchor" aria-label="anchor" href="#two-stage-bootstrap-interval"></a>
+<h2 id="phase-2-uncertainty-quantification-with-two-stage-bootstrap">Phase-2: Uncertainty quantification with two-stage bootstrap<a class="anchor" aria-label="anchor" href="#phase-2-uncertainty-quantification-with-two-stage-bootstrap"></a>
 </h2>
 <p>A naive bootstrap of the main study alone underestimates uncertainty
 because it ignores the variability in the Phase-1 calibration. The

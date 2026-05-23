@@ -3,16 +3,16 @@
 This vignette walks through one end-to-end fit on simulated data. The
 intended workflow on real data is the same four-stage pipeline:
 
-1.  **Phase-1 calibration** of the measurement-error model on a small
-    validation sample where both the truth `X` and the surrogates
-    `W_1, ..., W_J` are observed.
-2.  **GLS combination** of the surrogates on the main study into a
-    single calibrated exposure `W_bar` with a known conditional
+1.  **Phase-1: Parameter estimation** of the measurement-error model on
+    a small validation sample where both the truth `X` and the
+    surrogates `W_1, ..., W_J` are observed.
+2.  **Phase-1: GLS aggregation** of the surrogates on the main study
+    into a single calibrated exposure `W_bar` with a known conditional
     variance.
-3.  **SIMEX correction** of an AFT-spline dose-response fitted on
-    `W_bar`, which extrapolates back to the zero-error fit.
-4.  **Two-stage bootstrap** that resamples both the validation sample
-    and the main study, so the resulting confidence band reflects
+3.  **Phase-2: SIMEX correction** of an AFT-spline dose-response fitted
+    on `W_bar`, which extrapolates back to the zero-error fit.
+4.  **Phase-2:Two-stage bootstrap** that resamples both the validation
+    sample and the main study, so the resulting confidence band reflects
     uncertainty from *both* phases.
 
 ``` r
@@ -38,7 +38,7 @@ head(sim$survival, 3)
 #> 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1
 ```
 
-## Phase-1 calibration
+## Phase-1: Parameter estimation and surrogates aggregation
 
 [`fit_me_calibration()`](https://qihuangzhang.github.io/aftsplex/reference/fit_me_calibration.md)
 estimates the classical multivariate measurement-error model
@@ -84,7 +84,7 @@ round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
 #> [1] 1.42
 ```
 
-## SIMEX point estimate
+## Phase-2: SIMEX point estimate
 
 SIMEX (simulation-extrapolation) corrects the bias that arises from
 fitting the AFT-spline on the noisy `W_bar` instead of the unobserved
@@ -166,7 +166,7 @@ plot(s, truth = truth,
 
 ![](quickstart_files/figure-html/plot_simex-1.png)
 
-## Two-stage bootstrap interval
+## Phase-2: Uncertainty quantification with two-stage bootstrap
 
 A naive bootstrap of the main study alone underestimates uncertainty
 because it ignores the variability in the Phase-1 calibration. The
