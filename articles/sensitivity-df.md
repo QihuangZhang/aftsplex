@@ -68,12 +68,14 @@ curves <- lapply(fits, function(f) {
 
 ``` r
 
-plot_curves(x_grid, truth, fits = curves,
-            title = "Naive AFT-spline dose-response at four df values")
-#> Warning: No shared levels found between `names(values)` of the manual scale and the
-#> data's colour values.
-#> No shared levels found between `names(values)` of the manual scale and the
-#> data's colour values.
+sp <- stagill_palette()
+df_palette <- setNames(
+  unname(sp[c("TwilightIndigo", "MutedTeal", "ApricotCream", "BurntPeach")]),
+  paste0("df=", df_grid)
+)
+plot_curves(x_grid, truth, fits = curves, colors = df_palette,
+            title = "Naive AFT-spline dose-response at four df values") +
+  ggplot2::labs(color = "Spline df")
 ```
 
 ![](sensitivity-df_files/figure-html/plot_df_grid-1.png)
@@ -144,13 +146,14 @@ simex_curves <- lapply(df_show, function(d) {
 })
 names(simex_curves) <- paste0("df=", df_show)
 
-plot_curves(x_grid, truth, fits = simex_curves,
+simex_palette <- setNames(
+  unname(stagill_palette()[c("TwilightIndigo", "MutedTeal", "BurntPeach")]),
+  names(simex_curves)
+)
+plot_curves(x_grid, truth, fits = simex_curves, colors = simex_palette,
             title = paste0("SIMEX-corrected curve, df sensitivity around ",
-                           df_star))
-#> Warning: No shared levels found between `names(values)` of the manual scale and the
-#> data's colour values.
-#> No shared levels found between `names(values)` of the manual scale and the
-#> data's colour values.
+                           df_star)) +
+  ggplot2::labs(color = "Spline df")
 ```
 
 ![](sensitivity-df_files/figure-html/simex_sensitivity-1.png)

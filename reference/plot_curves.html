@@ -58,7 +58,8 @@ the <code><a href="method_colors.html">method_colors()</a></code> palette by def
 <span>  title <span class="op">=</span> <span class="st">"AFT + spline dose-response"</span>,</span>
 <span>  x_lab <span class="op">=</span> <span class="st">"Exposure"</span>,</span>
 <span>  y_lab <span class="op">=</span> <span class="st">"Centred linear predictor (log time ratio)"</span>,</span>
-<span>  colors <span class="op">=</span> <span class="fu"><a href="method_colors.html">method_colors</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  colors <span class="op">=</span> <span class="fu"><a href="method_colors.html">method_colors</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  ci_color <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,6 +97,13 @@ numeric vector of length <code>length(x_grid)</code>.</p></dd>
 <dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
 <dd><p>Optional named character vector of colours; defaults to
 <code><a href="method_colors.html">method_colors()</a></code> (matching <code>Naive</code>, <code>Oracle</code>, <code>SIMEX</code>).</p></dd>
+
+
+<dt id="arg-ci-color">ci_color<a class="anchor" aria-label="anchor" href="#arg-ci-color"></a></dt>
+<dd><p>Optional single colour for the confidence ribbon. If
+<code>NULL</code> (the default), uses <code>colors["SIMEX"]</code> when present (because the
+ribbon is typically a SIMEX bootstrap interval) and otherwise falls
+back to the first entry of <code>colors</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

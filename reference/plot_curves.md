@@ -17,7 +17,8 @@ plot_curves(
   title = "AFT + spline dose-response",
   x_lab = "Exposure",
   y_lab = "Centred linear predictor (log time ratio)",
-  colors = method_colors()
+  colors = method_colors(),
+  ci_color = NULL
 )
 ```
 
@@ -55,6 +56,13 @@ plot_curves(
   Optional named character vector of colours; defaults to
   [`method_colors()`](https://qihuangzhang.github.io/aftsplex/reference/method_colors.md)
   (matching `Naive`, `Oracle`, `SIMEX`).
+
+- ci_color:
+
+  Optional single colour for the confidence ribbon. If `NULL` (the
+  default), uses `colors["SIMEX"]` when present (because the ribbon is
+  typically a SIMEX bootstrap interval) and otherwise falls back to the
+  first entry of `colors`.
 
 ## Value
 

@@ -132,12 +132,14 @@ fit because higher <code>df</code> reduces smoothing bias for
 <span>  <span class="va">lp</span> <span class="op">-</span> <span class="va">lp</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">truth</span>, fits <span class="op">=</span> <span class="va">curves</span>,</span>
-<span>            title <span class="op">=</span> <span class="st">"Naive AFT-spline dose-response at four df values"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: No shared levels found between `names(values)` of the manual scale and the</span></span>
-<span><span class="co">#&gt; data's <span style="color: #00BB00;">colour</span> values.</span></span>
-<span><span class="co">#&gt; No shared levels found between `names(values)` of the manual scale and the</span></span>
-<span><span class="co">#&gt; data's <span style="color: #00BB00;">colour</span> values.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stagill_palette.html">stagill_palette</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">df_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">sp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TwilightIndigo"</span>, <span class="st">"MutedTeal"</span>, <span class="st">"ApricotCream"</span>, <span class="st">"BurntPeach"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"df="</span>, <span class="va">df_grid</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">truth</span>, fits <span class="op">=</span> <span class="va">curves</span>, colors <span class="op">=</span> <span class="va">df_palette</span>,</span>
+<span>            title <span class="op">=</span> <span class="st">"Naive AFT-spline dose-response at four df values"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Spline df"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sensitivity-df_files/figure-html/plot_df_grid-1.png" class="r-plt" alt="" width="672"></p>
 <p><strong>What to look for:</strong></p>
 <ul>
@@ -204,13 +206,14 @@ pipeline, but the result is much more informative for a reviewer.</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">simex_curves</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"df="</span>, <span class="va">df_show</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">truth</span>, fits <span class="op">=</span> <span class="va">simex_curves</span>,</span>
+<span><span class="va">simex_palette</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="../reference/stagill_palette.html">stagill_palette</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TwilightIndigo"</span>, <span class="st">"MutedTeal"</span>, <span class="st">"BurntPeach"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">simex_curves</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">truth</span>, fits <span class="op">=</span> <span class="va">simex_curves</span>, colors <span class="op">=</span> <span class="va">simex_palette</span>,</span>
 <span>            title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"SIMEX-corrected curve, df sensitivity around "</span>,</span>
-<span>                           <span class="va">df_star</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: No shared levels found between `names(values)` of the manual scale and the</span></span>
-<span><span class="co">#&gt; data's <span style="color: #00BB00;">colour</span> values.</span></span>
-<span><span class="co">#&gt; No shared levels found between `names(values)` of the manual scale and the</span></span>
-<span><span class="co">#&gt; data's <span style="color: #00BB00;">colour</span> values.</span></span></code></pre></div>
+<span>                           <span class="va">df_star</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"Spline df"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="sensitivity-df_files/figure-html/simex_sensitivity-1.png" class="r-plt" alt="" width="672"></p>
 <p>If these three curves agree on the qualitative dose-response shape —
 where it rises, where it plateaus, where it is monotone — the
