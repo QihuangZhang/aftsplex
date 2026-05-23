@@ -41,7 +41,7 @@ We use one simulated replicate to keep the runtime small. On real data
 substitute your cleaned survival data frame and validation sample.
 
 ```{r data}
-sim <- generate_aft_data(n = 2000, n_val = 500, seed = 1)
+sim <- generate_aft_data(n = 2000, n_val = 500, seed = 2026)
 
 cal <- fit_me_calibration(sim$validation)
 W   <- as.matrix(sim$survival[, cal$W_cols])

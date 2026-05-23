@@ -41,7 +41,7 @@ them. The main study has a latent exposure `X_true` that is *not*
 observed in practice; only the three noisy surrogates `W1, W2, W3` are.
 
 ```{r sim}
-sim <- generate_aft_data(n = 1000, n_val = 300, seed = 1)
+sim <- generate_aft_data(n = 1000, n_val = 300, seed = 2026)
 head(sim$survival, 3)
 ```
 
@@ -159,7 +159,7 @@ sampling variation. Key knobs:
   scheme.
 
 ```{r boot}
-set.seed(1)
+set.seed(2026)
 boot <- two_stage_bootstrap(
   survival   = sim$survival,
   validation = sim$validation,

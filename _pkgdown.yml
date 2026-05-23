@@ -46,6 +46,8 @@ reference:
       - fit_aft_spline
       - predict_curve
       - simex_aft_spline
+      - summary.simex_aft_spline
+      - plot.simex_aft_spline
 
   - title: Inference — two-stage bootstrap
     contents:
