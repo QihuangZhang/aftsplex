@@ -34,6 +34,10 @@ The estimator pipeline.
   setting
 - [`simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/simex_aft_spline.md)
   : SIMEX-correct the AFT-spline dose-response curve
+- [`summary(`*`<simex_aft_spline>`*`)`](https://qihuangzhang.github.io/aftsplex/reference/summary.simex_aft_spline.md)
+  : Summarise a SIMEX-corrected AFT-spline fit
+- [`plot(`*`<simex_aft_spline>`*`)`](https://qihuangzhang.github.io/aftsplex/reference/plot.simex_aft_spline.md)
+  : Plot a SIMEX-corrected AFT-spline fit
 
 ## Inference — two-stage bootstrap
 

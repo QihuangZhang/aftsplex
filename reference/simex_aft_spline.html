@@ -142,10 +142,14 @@ corrected curve. Defaults to 100 equally spaced points spanning
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with elements</p><ul><li><p><code>x_grid</code> the exposure grid,</p></li>
+    <p>An object of class <code>"simex_aft_spline"</code>: a list with elements</p><ul><li><p><code>x_grid</code> the exposure grid,</p></li>
 <li><p><code>curve_simex</code> the centred SIMEX-corrected linear predictor,</p></li>
+<li><p><code>curve_naive</code> the centred naive linear predictor (lambda = 0),</p></li>
 <li><p><code>curves_lambda</code> matrix of centred lambda-fits (columns = lambda, including 0),</p></li>
-<li><p><code>lambda</code> the lambda values used (with 0 in column 1).</p></li>
+<li><p><code>lambda</code> the lambda values used (with 0 in column 1),</p></li>
+<li><p><code>call</code>, <code>n</code>, <code>df</code>, <code>dist</code>, <code>covariates</code>, <code>B</code>, <code>sigma_w_sq</code>, <code>n_fail</code>
+configuration and diagnostics used by <code><a href="summary.simex_aft_spline.html">summary.simex_aft_spline()</a></code>
+and <code><a href="plot.simex_aft_spline.html">plot.simex_aft_spline()</a></code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -168,9 +172,27 @@ average via <code>na.rm = TRUE</code>, and the count is reported if <code>verbos
 <span class="r-in"><span>                      covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V1"</span>,<span class="st">"V2"</span>,<span class="st">"V3"</span>,<span class="st">"V4"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                      v_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>V1<span class="op">=</span><span class="fl">30</span>, V2<span class="op">=</span><span class="fl">30</span>, V3<span class="op">=</span><span class="fl">0</span>, V4<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                      lambda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">curve_simex</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          1          2          3          4          5          6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.00000000 0.02254499 0.04499498 0.06737831 0.08972246 0.11205485 </span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SIMEX-corrected AFT-spline dose-response</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Call:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   simex_aft_spline(data = dat, x_var = "W_bar", sigma_w_sq = g$sigma_w_sq, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     covariates = c("V1", "V2", "V3", "V4"), v_ref = c(V1 = 30, </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         V2 = 30, V3 = 0, V4 = 0), lambda = c(0.5, 1, 1.5, 2), </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     B = 10)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Configuration:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   n observations:  500                Spline df:    4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Covariates:      V1, V2, V3, V4     Distribution: lognormal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Inner B:         10                 sigma_w_sq:   1.2659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Centred dose-response (anchored at min(x_grid)):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               5%   25%    50%    75%    95%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x          3.617 6.666 10.478 14.289 17.339</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Naive      0.095 0.514  1.007  0.960  1.621</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SIMEX      0.111 0.592  1.199  1.224  2.208</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Correction 0.016 0.078  0.192  0.264  0.587</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

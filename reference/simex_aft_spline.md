@@ -91,16 +91,24 @@ simex_aft_spline(
 
 ## Value
 
-A list with elements
+An object of class `"simex_aft_spline"`: a list with elements
 
 - `x_grid` the exposure grid,
 
 - `curve_simex` the centred SIMEX-corrected linear predictor,
 
+- `curve_naive` the centred naive linear predictor (lambda = 0),
+
 - `curves_lambda` matrix of centred lambda-fits (columns = lambda,
   including 0),
 
-- `lambda` the lambda values used (with 0 in column 1).
+- `lambda` the lambda values used (with 0 in column 1),
+
+- `call`, `n`, `df`, `dist`, `covariates`, `B`, `sigma_w_sq`, `n_fail`
+  configuration and diagnostics used by
+  [`summary.simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/summary.simex_aft_spline.md)
+  and
+  [`plot.simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/plot.simex_aft_spline.md).
 
 ## Details
 
@@ -123,8 +131,26 @@ s <- simex_aft_spline(dat, x_var = "W_bar",
                       covariates = c("V1","V2","V3","V4"),
                       v_ref = c(V1=30, V2=30, V3=0, V4=0),
                       lambda = c(0.5, 1, 1.5, 2), B = 10)
-head(s$curve_simex)
-#>          1          2          3          4          5          6 
-#> 0.00000000 0.02254499 0.04499498 0.06737831 0.08972246 0.11205485 
+summary(s)
+#> SIMEX-corrected AFT-spline dose-response
+#> 
+#> Call:
+#>   simex_aft_spline(data = dat, x_var = "W_bar", sigma_w_sq = g$sigma_w_sq, 
+#>     covariates = c("V1", "V2", "V3", "V4"), v_ref = c(V1 = 30, 
+#>         V2 = 30, V3 = 0, V4 = 0), lambda = c(0.5, 1, 1.5, 2), 
+#>     B = 10)
+#> 
+#> Configuration:
+#>   n observations:  500                Spline df:    4
+#>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
+#>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
+#>   Inner B:         10                 sigma_w_sq:   1.2659
+#> 
+#> Centred dose-response (anchored at min(x_grid)):
+#>               5%   25%    50%    75%    95%
+#> x          3.617 6.666 10.478 14.289 17.339
+#> Naive      0.095 0.514  1.007  0.960  1.621
+#> SIMEX      0.111 0.592  1.199  1.224  2.208
+#> Correction 0.016 0.078  0.192  0.264  0.587
 # }
 ```

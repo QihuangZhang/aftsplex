@@ -30,7 +30,8 @@ plot_curves(
 - truth:
 
   Numeric vector of truth values (already centred at the first grid
-  point), the same length as `x_grid`.
+  point), the same length as `x_grid`. Pass `NULL` to omit the truth
+  line (e.g. on real data where the truth is unknown).
 
 - fits:
 

@@ -30,12 +30,12 @@ three noisy surrogates `W1, W2, W3` are.
 
 ``` r
 
-sim <- generate_aft_data(n = 1000, n_val = 300, seed = 1)
+sim <- generate_aft_data(n = 1000, n_val = 300, seed = 2026)
 head(sim$survival, 3)
-#>      T_obs delta    X_true       W1       W2       W3       V1       V2 V3 V4
-#> 1 262.2179     1  8.599207 11.44018 10.64514 7.314311 35.67483 25.56925  0  1
-#> 2 706.4496     0 10.410639 10.06811 11.15140 7.532874 35.55966 20.38873  1  1
-#> 3 259.9447     1  8.131478 10.02983  8.43953 9.722204 25.64611 38.09850  1  1
+#>      T_obs delta    X_true        W1        W2       W3       V1       V2 V3 V4
+#> 1 826.9194     0 11.164073 12.458170 10.888199 9.588079 38.85282 30.99448  1  1
+#> 2 415.8046     1  7.585738  6.493913  8.156123 6.040509 34.50189 30.82174  1  1
+#> 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1
 ```
 
 ## Phase-1 calibration
@@ -56,12 +56,12 @@ scale shift that the GLS step will correct.
 
 cal <- fit_me_calibration(sim$validation)
 cal$alpha1                # close to 1: surrogates are essentially unbiased
-#> [1] 0.9591900 0.9580766 0.8901528
+#> [1] 0.9760726 1.0247585 1.0458784
 round(cal$Sigma_e, 2)     # error covariance across the three surrogates
 #>      [,1] [,2] [,3]
-#> [1,] 1.77 0.88 1.06
-#> [2,] 0.88 2.28 1.05
-#> [3,] 1.06 1.05 3.15
+#> [1,] 1.94 1.00 1.01
+#> [2,] 1.00 2.63 1.06
+#> [3,] 1.01 1.06 2.60
 ```
 
 [`gls_combine()`](https://qihuangzhang.github.io/aftsplex/reference/gls_combine.md)
@@ -81,7 +81,7 @@ g <- gls_combine(W, cal)
 dat <- sim$survival
 dat$W_bar <- g$W_bar
 round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
-#> [1] 1.517
+#> [1] 1.42
 ```
 
 ## SIMEX point estimate
@@ -119,6 +119,53 @@ s <- simex_aft_spline(
 )
 ```
 
+[`summary()`](https://rdrr.io/r/base/summary.html) reports the
+configuration of the fit alongside the SIMEX-corrected dose-response at
+quantiles of the exposure grid, with the naive curve as a smoothing-bias
+reference. The `Correction` row quantifies how much SIMEX shifts the
+naive curve at each exposure quantile – larger magnitude indicates more
+residual ME attenuation that the correction is undoing.
+
+``` r
+
+summary(s)
+#> SIMEX-corrected AFT-spline dose-response
+#> 
+#> Call:
+#>   simex_aft_spline(data = dat, x_var = "W_bar", sigma_w_sq = g$sigma_w_sq, 
+#>     covariates = c("V1", "V2", "V3", "V4"), v_ref = c(V1 = 30, 
+#>         V2 = 30, V3 = 0, V4 = 0), lambda = c(0.5, 1, 1.5, 2), 
+#>     B = 100, x_grid = x_grid)
+#> 
+#> Configuration:
+#>   n observations:  1000               Spline df:    4
+#>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
+#>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
+#>   Inner B:         100                sigma_w_sq:   1.4200
+#> 
+#> Centred dose-response (anchored at min(x_grid)):
+#>               5%   25%    50%    75%    95%
+#> x          5.583 7.619 10.164 12.710 14.746
+#> Naive      0.029 0.130  0.201  0.231  0.329
+#> SIMEX      0.043 0.197  0.304  0.293  0.450
+#> Correction 0.013 0.067  0.104  0.063  0.120
+```
+
+A bare [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the
+SIMEX object draws the corrected curve with the naive curve overlaid
+(the smoothing-bias reference). Because we are on simulated data we can
+also pass `truth` to overlay the data-generating curve as a dashed line;
+on real data simply omit it.
+
+``` r
+
+truth <- f_true(x_grid) - f_true(x_grid[1])
+plot(s, truth = truth,
+     title = "SIMEX-corrected dose-response (point estimate, B = 100)")
+```
+
+![](quickstart_files/figure-html/plot_simex-1.png)
+
 ## Two-stage bootstrap interval
 
 A naive bootstrap of the main study alone underestimates uncertainty
@@ -145,7 +192,7 @@ sampling variation. Key knobs:
 
 ``` r
 
-set.seed(1)
+set.seed(2026)
 boot <- two_stage_bootstrap(
   survival   = sim$survival,
   validation = sim$validation,
@@ -158,15 +205,21 @@ boot <- two_stage_bootstrap(
 )
 ```
 
-## Plot
+## Plot with the bootstrap confidence band
+
+The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method on
+the SIMEX object accepts a `ci` argument with `lower` and `upper`
+elements, so we can overlay the bootstrap percentile ribbon directly.
+The point estimate `s$curve_simex` and the bootstrap `boot$f_hat` are
+essentially identical (both are single SIMEX runs on the full sample,
+differing only by RNG state); we plot `s` here to keep the example
+self-contained.
 
 ``` r
 
-truth <- f_true(x_grid) - f_true(x_grid[1])
-fits  <- list(SIMEX = boot$f_hat)
-plot_curves(x_grid, truth, fits,
-            ci = list(lower = boot$lower, upper = boot$upper),
-            title = "SIMEX-corrected dose-response with two-stage bootstrap CI")
+plot(s, truth = truth,
+     ci = list(lower = boot$lower, upper = boot$upper),
+     title = "SIMEX-corrected dose-response with two-stage bootstrap CI")
 ```
 
 ![](quickstart_files/figure-html/plot-1.png)

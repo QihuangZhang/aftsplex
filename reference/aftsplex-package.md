@@ -11,9 +11,11 @@ bootstrap that jointly resamples the validation and main-study samples.
 
 Useful links:
 
-- <https://github.com/StaGILL/aftsplex>
+- <https://qihuangzhang.github.io/aftsplex/>
 
-- Report bugs at <https://github.com/StaGILL/aftsplex/issues>
+- <https://github.com/QihuangZhang/aftsplex>
+
+- Report bugs at <https://github.com/QihuangZhang/aftsplex/issues>
 
 ## Author
 
