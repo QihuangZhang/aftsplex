@@ -49,10 +49,10 @@
 #'   * `sigma_w_sq_boot, omega_boot` per-replicate Phase-1 summaries,
 #'   * `R_effective` number of replicates that produced a curve.
 #'
-#' Empirically (see `vignette("coverage-diagnostics")`) the percentile CI is
-#' the primary interval; the basic CI is kept for completeness but does not
-#' improve coverage on simulated diminishing-returns curves because the
-#' dominant residual bias is from spline smoothing rather than SIMEX.
+#' The percentile CI is the primary interval; the basic (reverse-percentile)
+#' CI is kept for completeness but does not improve coverage on simulated
+#' diminishing-returns curves because the dominant residual bias is from
+#' spline smoothing rather than SIMEX.
 #'
 #' @examples
 #' \donttest{

@@ -14,6 +14,17 @@ navbar:
     left:  [intro, reference, articles, news]
     right: [search, github]
 
+home:
+  sidebar:
+    structure: [links, articles, license, citation, authors]
+    components:
+      articles:
+        title: Articles
+        text: |
+          - [Get started](articles/quickstart.html)
+          - [Simulation study: Oracle vs Naive vs SIMEX](articles/simulation-study.html)
+          - [Sensitivity analysis: spline degrees of freedom](articles/sensitivity-df.html)
+
 reference:
   - title: Data-generating process
     desc: Helpers for the simulation studies used in the manuscript.
@@ -52,8 +63,8 @@ articles:
     navbar: ~
     contents:
       - quickstart
-  - title: Manuscript-aligned diagnostics
+  - title: Practical workflows
     navbar: ~
     contents:
       - simulation-study
-      - coverage-diagnostics
+      - sensitivity-df

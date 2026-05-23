@@ -47,8 +47,9 @@ lines(boot$x_grid, boot$upper, lty = 2)
 ```
 
 See `vignette("quickstart", package = "aftsplex")` for a fuller walk-through,
-and `vignette("simulation-study")` and `vignette("coverage-diagnostics")` for
-the Monte Carlo and coverage-bias diagnostics that accompany the manuscript.
+`vignette("simulation-study")` for the Monte Carlo bias and ISE comparison
+across estimators, and `vignette("sensitivity-df")` for guidance on choosing
+the spline degrees of freedom.
 
 ## Method
 
