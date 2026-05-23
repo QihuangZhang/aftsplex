@@ -17,6 +17,10 @@
 #' @param x_lab,y_lab Axis labels.
 #' @param colors Optional named character vector of colours; defaults to
 #'   [method_colors()] (matching `Naive`, `Oracle`, `SIMEX`).
+#' @param ci_color Optional single colour for the confidence ribbon. If
+#'   `NULL` (the default), uses `colors["SIMEX"]` when present (because the
+#'   ribbon is typically a SIMEX bootstrap interval) and otherwise falls
+#'   back to the first entry of `colors`.
 #'
 #' @return A `ggplot` object.
 #'
@@ -32,7 +36,8 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
                         title = "AFT + spline dose-response",
                         x_lab = "Exposure",
                         y_lab = "Centred linear predictor (log time ratio)",
-                        colors = method_colors()) {
+                        colors = method_colors(),
+                        ci_color = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package 'ggplot2' is required for plot_curves(). ",
          "Install it via install.packages('ggplot2').")
@@ -59,11 +64,14 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
     ggplot2::theme_bw(base_size = 12)
 
   if (!is.null(ci)) {
+    if (is.null(ci_color)) {
+      ci_color <- if ("SIMEX" %in% names(colors)) unname(colors["SIMEX"]) else unname(colors[1])
+    }
     df_ci <- data.frame(x = x_grid, lower = ci$lower, upper = ci$upper)
     p <- p + ggplot2::geom_ribbon(
       data = df_ci,
       ggplot2::aes(x = .data$x, ymin = .data$lower, ymax = .data$upper),
-      fill = unname(colors[1]), alpha = 0.18
+      fill = ci_color, alpha = 0.22
     )
   }
   p

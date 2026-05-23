@@ -12,7 +12,8 @@ plot_curves(
   title = "AFT + spline dose-response",
   x_lab = "Exposure",
   y_lab = "Centred linear predictor (log time ratio)",
-  colors = method_colors()
+  colors = method_colors(),
+  ci_color = NULL
 )
 }
 \arguments{
@@ -33,6 +34,11 @@ numeric vector of length \code{length(x_grid)}.}
 
 \item{colors}{Optional named character vector of colours; defaults to
 \code{\link[=method_colors]{method_colors()}} (matching \code{Naive}, \code{Oracle}, \code{SIMEX}).}
+
+\item{ci_color}{Optional single colour for the confidence ribbon. If
+\code{NULL} (the default), uses \code{colors["SIMEX"]} when present (because the
+ribbon is typically a SIMEX bootstrap interval) and otherwise falls
+back to the first entry of \code{colors}.}
 }
 \value{
 A \code{ggplot} object.
