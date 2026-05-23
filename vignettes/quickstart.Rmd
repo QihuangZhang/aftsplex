@@ -114,6 +114,28 @@ s <- simex_aft_spline(
 )
 ```
 
+`summary()` reports the configuration of the fit alongside the
+SIMEX-corrected dose-response at quantiles of the exposure grid, with
+the naive curve as a smoothing-bias reference. The `Correction` row
+quantifies how much SIMEX shifts the naive curve at each exposure
+quantile -- larger magnitude indicates more residual ME attenuation
+that the correction is undoing.
+
+```{r summary}
+summary(s)
+```
+
+A bare `plot()` on the SIMEX object draws the corrected curve with the
+naive curve overlaid (the smoothing-bias reference). Because we are on
+simulated data we can also pass `truth` to overlay the data-generating
+curve as a dashed line; on real data simply omit it.
+
+```{r plot_simex, eval = requireNamespace("ggplot2", quietly = TRUE)}
+truth <- f_true(x_grid) - f_true(x_grid[1])
+plot(s, truth = truth,
+     title = "SIMEX-corrected dose-response (point estimate, B = 100)")
+```
+
 ## Two-stage bootstrap interval
 
 A naive bootstrap of the main study alone underestimates uncertainty
@@ -150,12 +172,17 @@ boot <- two_stage_bootstrap(
 )
 ```
 
-## Plot
+## Plot with the bootstrap confidence band
+
+The `plot()` method on the SIMEX object accepts a `ci` argument with
+`lower` and `upper` elements, so we can overlay the bootstrap percentile
+ribbon directly. The point estimate `s$curve_simex` and the bootstrap
+`boot$f_hat` are essentially identical (both are single SIMEX runs on
+the full sample, differing only by RNG state); we plot `s` here to keep
+the example self-contained.
 
 ```{r plot, eval = requireNamespace("ggplot2", quietly = TRUE)}
-truth <- f_true(x_grid) - f_true(x_grid[1])
-fits  <- list(SIMEX = boot$f_hat)
-plot_curves(x_grid, truth, fits,
-            ci = list(lower = boot$lower, upper = boot$upper),
-            title = "SIMEX-corrected dose-response with two-stage bootstrap CI")
+plot(s, truth = truth,
+     ci = list(lower = boot$lower, upper = boot$upper),
+     title = "SIMEX-corrected dose-response with two-stage bootstrap CI")
 ```

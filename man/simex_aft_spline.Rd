@@ -55,12 +55,16 @@ corrected curve. Defaults to 100 equally spaced points spanning
 \code{\link[survival:survreg.control]{survival::survreg.control()}}).}
 }
 \value{
-A list with elements
+An object of class \code{"simex_aft_spline"}: a list with elements
 \itemize{
 \item \code{x_grid} the exposure grid,
 \item \code{curve_simex} the centred SIMEX-corrected linear predictor,
+\item \code{curve_naive} the centred naive linear predictor (lambda = 0),
 \item \code{curves_lambda} matrix of centred lambda-fits (columns = lambda, including 0),
-\item \code{lambda} the lambda values used (with 0 in column 1).
+\item \code{lambda} the lambda values used (with 0 in column 1),
+\item \code{call}, \code{n}, \code{df}, \code{dist}, \code{covariates}, \code{B}, \code{sigma_w_sq}, \code{n_fail}
+configuration and diagnostics used by \code{\link[=summary.simex_aft_spline]{summary.simex_aft_spline()}}
+and \code{\link[=plot.simex_aft_spline]{plot.simex_aft_spline()}}.
 }
 }
 \description{
@@ -90,7 +94,7 @@ s <- simex_aft_spline(dat, x_var = "W_bar",
                       covariates = c("V1","V2","V3","V4"),
                       v_ref = c(V1=30, V2=30, V3=0, V4=0),
                       lambda = c(0.5, 1, 1.5, 2), B = 10)
-head(s$curve_simex)
+summary(s)
 }
 
 }

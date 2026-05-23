@@ -16,8 +16,9 @@ that jointly resamples the validation and main-study samples.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/StaGILL/aftsplex}
-  \item Report bugs at \url{https://github.com/StaGILL/aftsplex/issues}
+  \item \url{https://qihuangzhang.github.io/aftsplex/}
+  \item \url{https://github.com/QihuangZhang/aftsplex}
+  \item Report bugs at \url{https://github.com/QihuangZhang/aftsplex/issues}
 }
 
 }

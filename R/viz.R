@@ -8,7 +8,8 @@
 #'
 #' @param x_grid Numeric exposure grid.
 #' @param truth Numeric vector of truth values (already centred at the
-#'   first grid point), the same length as `x_grid`.
+#'   first grid point), the same length as `x_grid`. Pass `NULL` to omit
+#'   the truth line (e.g. on real data where the truth is unknown).
 #' @param fits Named list of numeric vectors of length `length(x_grid)`.
 #' @param ci Optional list with elements `lower` and `upper`, each a
 #'   numeric vector of length `length(x_grid)`.
@@ -39,12 +40,17 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
   df_long <- do.call(rbind, lapply(names(fits), function(nm) {
     data.frame(x = x_grid, y = fits[[nm]], method = nm)
   }))
-  df_truth <- data.frame(x = x_grid, y = truth)
 
-  p <- ggplot2::ggplot() +
-    ggplot2::geom_line(data = df_truth,
-                       ggplot2::aes(x = .data$x, y = .data$y),
-                       color = "black", linewidth = 1.0, linetype = "dashed") +
+  p <- ggplot2::ggplot()
+  if (!is.null(truth)) {
+    df_truth <- data.frame(x = x_grid, y = truth)
+    p <- p + ggplot2::geom_line(
+      data = df_truth,
+      ggplot2::aes(x = .data$x, y = .data$y),
+      color = "black", linewidth = 1.0, linetype = "dashed"
+    )
+  }
+  p <- p +
     ggplot2::geom_line(data = df_long,
                        ggplot2::aes(x = .data$x, y = .data$y, color = .data$method),
                        linewidth = 0.9) +

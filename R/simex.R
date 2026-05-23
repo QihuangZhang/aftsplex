@@ -32,11 +32,15 @@
 #' @param maxiter `survreg` iteration cap (passed via
 #'   [survival::survreg.control()]).
 #'
-#' @return A list with elements
+#' @return An object of class `"simex_aft_spline"`: a list with elements
 #'   * `x_grid` the exposure grid,
 #'   * `curve_simex` the centred SIMEX-corrected linear predictor,
+#'   * `curve_naive` the centred naive linear predictor (lambda = 0),
 #'   * `curves_lambda` matrix of centred lambda-fits (columns = lambda, including 0),
-#'   * `lambda` the lambda values used (with 0 in column 1).
+#'   * `lambda` the lambda values used (with 0 in column 1),
+#'   * `call`, `n`, `df`, `dist`, `covariates`, `B`, `sigma_w_sq`, `n_fail`
+#'     configuration and diagnostics used by [summary.simex_aft_spline()]
+#'     and [plot.simex_aft_spline()].
 #'
 #' @examples
 #' \donttest{
@@ -51,7 +55,7 @@
 #'                       covariates = c("V1","V2","V3","V4"),
 #'                       v_ref = c(V1=30, V2=30, V3=0, V4=0),
 #'                       lambda = c(0.5, 1, 1.5, 2), B = 10)
-#' head(s$curve_simex)
+#' summary(s)
 #' }
 #'
 #' @export
@@ -64,6 +68,7 @@ simex_aft_spline <- function(
   dist = "lognormal", x_grid = NULL,
   verbose = FALSE, maxiter = 200
 ) {
+  call <- match.call()
   if (is.null(x_grid)) {
     x_grid <- seq(min(data[[x_var]]), max(data[[x_var]]), length.out = 100)
   }
@@ -124,6 +129,7 @@ simex_aft_spline <- function(
 
   lambda_full <- c(0, lambda)
   curves_full <- cbind(curve_naive, curves_lambda)
+  colnames(curves_full) <- paste0("lam=", format(lambda_full, digits = 2))
 
   curve_simex <- apply(curves_full, 1, function(yv) {
     df_extr <- data.frame(lam = lambda_full, y = yv)
@@ -131,6 +137,134 @@ simex_aft_spline <- function(
     as.numeric(predict(fit_extr, newdata = data.frame(lam = -1)))
   })
 
-  list(x_grid = x_grid, curve_simex = curve_simex,
-       curves_lambda = curves_full, lambda = lambda_full)
+  out <- list(
+    x_grid       = x_grid,
+    curve_simex  = curve_simex,
+    curve_naive  = curve_naive,
+    curves_lambda = curves_full,
+    lambda       = lambda_full,
+    call         = call,
+    n            = nrow(data),
+    df           = df,
+    dist         = dist,
+    covariates   = covariates,
+    B            = B,
+    sigma_w_sq   = sigma_w_sq,
+    n_fail       = n_fail
+  )
+  class(out) <- "simex_aft_spline"
+  out
+}
+
+#' @export
+print.simex_aft_spline <- function(x, ...) {
+  cat("SIMEX-corrected AFT-spline dose-response\n\n")
+  cat("Call:\n  "); print(x$call); cat("\n")
+  cat(sprintf("  x_grid: [%.3f, %.3f] (%d points)   n_obs: %d   df: %d\n",
+              min(x$x_grid), max(x$x_grid), length(x$x_grid), x$n, x$df))
+  cat(sprintf("  sigma_w_sq: %.4f   lambda: %s   B: %d\n",
+              x$sigma_w_sq,
+              paste(format(x$lambda[x$lambda > 0], digits = 2), collapse = ","),
+              x$B))
+  cat("\nUse summary() for a quantile table, plot() to draw the curve.\n")
+  invisible(x)
+}
+
+#' Summarise a SIMEX-corrected AFT-spline fit
+#'
+#' Returns a tabular summary of the SIMEX point estimate together with the
+#' configuration that produced it. The headline table reports the centred
+#' Naive and SIMEX dose-response (and their difference, the SIMEX
+#' correction) at quantiles of the exposure grid.
+#'
+#' @param object A [simex_aft_spline()] fit.
+#' @param probs Quantiles of `x_grid` at which to report the centred curves.
+#'   Default `c(0.05, 0.25, 0.50, 0.75, 0.95)`.
+#' @param ... Unused.
+#'
+#' @return An object of class `"summary.simex_aft_spline"` with a `table`
+#'   element and the configuration fields. Has a `print` method.
+#'
+#' @export
+summary.simex_aft_spline <- function(object,
+                                     probs = c(0.05, 0.25, 0.50, 0.75, 0.95),
+                                     ...) {
+  qs <- as.numeric(quantile(object$x_grid, probs))
+  approx_curve <- function(yv) stats::approx(object$x_grid, yv, xout = qs)$y
+  naive <- object$curve_naive
+  simex <- object$curve_simex
+  tab <- rbind(
+    x          = qs,
+    Naive      = approx_curve(naive),
+    SIMEX      = approx_curve(simex),
+    Correction = approx_curve(simex - naive)
+  )
+  colnames(tab) <- sprintf("%g%%", 100 * probs)
+
+  out <- list(
+    call       = object$call,
+    n          = object$n,
+    df         = object$df,
+    dist       = object$dist,
+    covariates = object$covariates,
+    lambda     = object$lambda,
+    B          = object$B,
+    sigma_w_sq = object$sigma_w_sq,
+    n_fail     = object$n_fail,
+    table      = tab
+  )
+  class(out) <- "summary.simex_aft_spline"
+  out
+}
+
+#' @export
+print.summary.simex_aft_spline <- function(x, digits = 3, ...) {
+  cat("SIMEX-corrected AFT-spline dose-response\n\n")
+  cat("Call:\n  "); print(x$call); cat("\n")
+  cat("Configuration:\n")
+  cov_str <- if (length(x$covariates) == 0L) "(none)" else paste(x$covariates, collapse = ", ")
+  cat(sprintf("  n observations:  %-18d Spline df:    %d\n", x$n, x$df))
+  cat(sprintf("  Covariates:      %-18s Distribution: %s\n", cov_str, x$dist))
+  cat(sprintf("  Lambda grid:     %s\n",
+              paste(format(x$lambda, digits = 2), collapse = ", ")))
+  cat(sprintf("  Inner B:         %-18d sigma_w_sq:   %.4f\n",
+              x$B, x$sigma_w_sq))
+  cat("\nCentred dose-response (anchored at min(x_grid)):\n")
+  print(round(x$table, digits))
+  total <- x$B * sum(x$lambda > 0)
+  if (!is.null(x$n_fail) && x$n_fail > 0L) {
+    cat(sprintf("\nNotes: %d of %d perturbed fits dropped for non-convergence.\n",
+                x$n_fail, total))
+  }
+  invisible(x)
+}
+
+#' Plot a SIMEX-corrected AFT-spline fit
+#'
+#' Convenience S3 method that draws the SIMEX-corrected curve via
+#' [plot_curves()]. By default the naive curve (`lambda = 0`) is overlaid
+#' as a smoothing-bias diagnostic. Pass `truth` to add the dashed truth
+#' line, and `ci` to add a percentile ribbon (typically from
+#' [two_stage_bootstrap()]).
+#'
+#' @param x A [simex_aft_spline()] fit.
+#' @param truth Optional numeric vector (length `length(x$x_grid)`) of the
+#'   centred truth curve to overlay as a dashed black line.
+#' @param ci Optional list with elements `lower` and `upper`.
+#' @param show_naive Logical; overlay the naive (`lambda = 0`) curve?
+#'   Default `TRUE`.
+#' @param title Plot title.
+#' @param ... Passed through to [plot_curves()].
+#'
+#' @return A `ggplot` object.
+#'
+#' @export
+plot.simex_aft_spline <- function(x, truth = NULL, ci = NULL,
+                                  show_naive = TRUE,
+                                  title = "SIMEX-corrected AFT-spline dose-response",
+                                  ...) {
+  fits <- list(SIMEX = x$curve_simex)
+  if (isTRUE(show_naive)) fits$Naive <- x$curve_naive
+  plot_curves(x$x_grid, truth = truth, fits = fits, ci = ci,
+              title = title, ...)
 }

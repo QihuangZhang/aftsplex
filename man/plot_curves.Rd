@@ -19,7 +19,8 @@ plot_curves(
 \item{x_grid}{Numeric exposure grid.}
 
 \item{truth}{Numeric vector of truth values (already centred at the
-first grid point), the same length as \code{x_grid}.}
+first grid point), the same length as \code{x_grid}. Pass \code{NULL} to omit
+the truth line (e.g. on real data where the truth is unknown).}
 
 \item{fits}{Named list of numeric vectors of length \code{length(x_grid)}.}
 
