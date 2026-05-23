@@ -37,9 +37,9 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/quickstart.html">Quick start: AFT + spline + SIMEX in 30 lines</a></li>
+<li><a class="dropdown-item" href="articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
-    <li><a class="dropdown-item" href="articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul>
 </li>
       </ul>
@@ -94,7 +94,7 @@
 <span>     xlab <span class="op">=</span> <span class="st">"X"</span>, ylab <span class="op">=</span> <span class="st">"Centred linear predictor"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">boot</span><span class="op">$</span><span class="va">x_grid</span>, <span class="va">boot</span><span class="op">$</span><span class="va">lower</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">boot</span><span class="op">$</span><span class="va">x_grid</span>, <span class="va">boot</span><span class="op">$</span><span class="va">upper</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p>See <code><a href="articles/quickstart.html">vignette("quickstart", package = "aftsplex")</a></code> for a fuller walk-through, and <code><a href="articles/simulation-study.html">vignette("simulation-study")</a></code> and <code><a href="articles/coverage-diagnostics.html">vignette("coverage-diagnostics")</a></code> for the Monte Carlo and coverage-bias diagnostics that accompany the manuscript.</p>
+<p>See <code><a href="articles/quickstart.html">vignette("quickstart", package = "aftsplex")</a></code> for a fuller walk-through, <code><a href="articles/simulation-study.html">vignette("simulation-study")</a></code> for the Monte Carlo bias and ISE comparison across estimators, and <code><a href="articles/sensitivity-df.html">vignette("sensitivity-df")</a></code> for guidance on choosing the spline degrees of freedom.</p>
 </div>
 <div class="section level2">
 <h2 id="method">Method<a class="anchor" aria-label="anchor" href="#method"></a>
@@ -130,6 +130,17 @@
 </ul>
 </div>
 
+<div class="articles">
+<h2 data-toc-skip>Articles</h2>
+<ul class="list-unstyled">
+<li><ul>
+<li><a href="articles/quickstart.html">Get started</a></li>
+<li><a href="articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
+<li><a href="articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+</ul></li>
+</ul>
+</div>
+
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
@@ -137,7 +148,6 @@
 <li><small><a href="https://opensource.org/licenses/mit-license.php" class="external-link">MIT</a> + file <a href="LICENSE-text.html">LICENSE</a></small></li>
 </ul>
 </div>
-
 
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
@@ -150,14 +160,6 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Qihuang Zhang <br><small class="roles"> Author, maintainer </small>   </li>
-</ul>
-</div>
-
-<div class="dev-status">
-<h2 data-toc-skip>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://github.com/QihuangZhang/aftsplex/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/QihuangZhang/aftsplex/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
-<li><a href="https://qihuangzhang.github.io/aftsplex/"><img src="https://github.com/QihuangZhang/aftsplex/actions/workflows/pkgdown.yaml/badge.svg" alt="pkgdown"></a></li>
 </ul>
 </div>
 

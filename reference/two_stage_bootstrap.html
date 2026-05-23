@@ -36,9 +36,9 @@ corrected curve.
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX in 30 lines</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
-    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -159,10 +159,10 @@ full-sample combined surrogate.</p></dd>
 <li><p><code>f_bc</code> bias-corrected point estimate <code>2*f_hat - bs_mean</code>,</p></li>
 <li><p><code>sigma_w_sq_boot, omega_boot</code> per-replicate Phase-1 summaries,</p></li>
 <li><p><code>R_effective</code> number of replicates that produced a curve.</p></li>
-</ul><p>Empirically (see <code><a href="../articles/coverage-diagnostics.html">vignette("coverage-diagnostics")</a></code>) the percentile CI is
-the primary interval; the basic CI is kept for completeness but does not
-improve coverage on simulated diminishing-returns curves because the
-dominant residual bias is from spline smoothing rather than SIMEX.</p>
+</ul><p>The percentile CI is the primary interval; the basic (reverse-percentile)
+CI is kept for completeness but does not improve coverage on simulated
+diminishing-returns curves because the dominant residual bias is from
+spline smoothing rather than SIMEX.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

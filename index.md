@@ -46,12 +46,11 @@ lines(boot$x_grid, boot$upper, lty = 2)
 
 See
 [`vignette("quickstart", package = "aftsplex")`](https://qihuangzhang.github.io/aftsplex/articles/quickstart.md)
-for a fuller walk-through, and
+for a fuller walk-through,
 [`vignette("simulation-study")`](https://qihuangzhang.github.io/aftsplex/articles/simulation-study.md)
-and
-[`vignette("coverage-diagnostics")`](https://qihuangzhang.github.io/aftsplex/articles/coverage-diagnostics.md)
-for the Monte Carlo and coverage-bias diagnostics that accompany the
-manuscript.
+for the Monte Carlo bias and ISE comparison across estimators, and
+[`vignette("sensitivity-df")`](https://qihuangzhang.github.io/aftsplex/articles/sensitivity-df.md)
+for guidance on choosing the spline degrees of freedom.
 
 ## Method
 

@@ -2,12 +2,12 @@
 
 ### Get started
 
-- [Quick start: AFT + spline + SIMEX in 30
-  lines](https://qihuangzhang.github.io/aftsplex/articles/quickstart.md):
+- [Quick start: AFT + spline +
+  SIMEX](https://qihuangzhang.github.io/aftsplex/articles/quickstart.md):
 
-### Manuscript-aligned diagnostics
+### Practical workflows
 
 - [Simulation study: Oracle vs Naive vs
   SIMEX](https://qihuangzhang.github.io/aftsplex/articles/simulation-study.md):
-- [Coverage diagnostics: bootstrap SE versus empirical
-  SE](https://qihuangzhang.github.io/aftsplex/articles/coverage-diagnostics.md):
+- [Sensitivity analysis: spline degrees of
+  freedom](https://qihuangzhang.github.io/aftsplex/articles/sensitivity-df.md):

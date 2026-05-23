@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Quick start: AFT + spline + SIMEX in 30 lines • aftsplex</title>
+<title>Quick start: AFT + spline + SIMEX • aftsplex</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Source_Sans_Pro-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quick start: AFT + spline + SIMEX in 30 lines">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quick start: AFT + spline + SIMEX">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -35,9 +35,9 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX in 30 lines</a></li>
+<li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
-    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul>
 </li>
       </ul>
@@ -59,7 +59,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Quick start: AFT + spline + SIMEX in 30 lines</h1>
+      <h1>Quick start: AFT + spline + SIMEX</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/QihuangZhang/aftsplex/blob/main/vignettes/quickstart.Rmd" class="external-link"><code>vignettes/quickstart.Rmd</code></a></small>
@@ -68,19 +68,36 @@
 
     
     
-<p>This vignette walks through one end-to-end fit on simulated data,
-taking under ten seconds on a laptop. The intended workflow on real data
-is the same: a small-validation Phase-1 fit, GLS-combined exposure on
-the main study, SIMEX correction, and a two-stage bootstrap for
-inference.</p>
+<p>This vignette walks through one end-to-end fit on simulated data. The
+intended workflow on real data is the same four-stage pipeline:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Phase-1 calibration</strong> of the measurement-error model
+on a small validation sample where both the truth <code>X</code> and the
+surrogates <code>W_1, ..., W_J</code> are observed.</li>
+<li>
+<strong>GLS combination</strong> of the surrogates on the main study
+into a single calibrated exposure <code>W_bar</code> with a known
+conditional variance.</li>
+<li>
+<strong>SIMEX correction</strong> of an AFT-spline dose-response
+fitted on <code>W_bar</code>, which extrapolates back to the zero-error
+fit.</li>
+<li>
+<strong>Two-stage bootstrap</strong> that resamples both the
+validation sample and the main study, so the resulting confidence band
+reflects uncertainty from <em>both</em> phases.</li>
+</ol>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://qihuangzhang.github.io/aftsplex/">aftsplex</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="simulate">Simulate<a class="anchor" aria-label="anchor" href="#simulate"></a>
 </h2>
 <p><code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> returns a list with a main-study
-survival data frame, a validation data frame, and the truth used to
-generate them.</p>
+survival data frame, a small validation data frame, and the truth used
+to generate them. The main study has a latent exposure
+<code>X_true</code> that is <em>not</em> observed in practice; only the
+three noisy surrogates <code>W1, W2, W3</code> are.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, n_val <span class="op">=</span> <span class="fl">300</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -92,29 +109,66 @@ generate them.</p>
 <div class="section level2">
 <h2 id="phase-1-calibration">Phase-1 calibration<a class="anchor" aria-label="anchor" href="#phase-1-calibration"></a>
 </h2>
+<p><code><a href="../reference/fit_me_calibration.html">fit_me_calibration()</a></code> estimates the classical
+multivariate measurement-error model</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mi>j</mi></msub><mo>=</mo><msub><mi>α</mi><mrow><mn>0</mn><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>α</mi><mrow><mn>1</mn><mi>j</mi></mrow></msub><mspace width="0.167em"></mspace><mi>X</mi><mo>+</mo><msub><mi>e</mi><mi>j</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><mi>e</mi><mo>∼</mo><msub><mi>𝒩</mi><mi>J</mi></msub><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msub><mi mathvariant="normal">Σ</mi><mi>e</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex"> W_j = \alpha_{0j} + \alpha_{1j}\, X + e_j, \qquad e \sim \mathcal N_J(0, \Sigma_e), </annotation></semantics></math></p>
+<p>on the validation sample, returning per-surrogate intercepts and
+slopes together with the residual covariance <code>Sigma_e</code>. The
+slope <code>alpha1</code> near 1 indicates an essentially unbiased
+surrogate; departures from 1 flag scale shift that the GLS step will
+correct.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_me_calibration.html">fit_me_calibration</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span><span class="op">)</span></span>
-<span><span class="va">cal</span><span class="op">$</span><span class="va">alpha1</span>                <span class="co"># close to 1: surrogate is unbiased for truth</span></span>
+<span><span class="va">cal</span><span class="op">$</span><span class="va">alpha1</span>                <span class="co"># close to 1: surrogates are essentially unbiased</span></span>
 <span><span class="co">#&gt; [1] 0.9591900 0.9580766 0.8901528</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cal</span><span class="op">$</span><span class="va">Sigma_e</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cal</span><span class="op">$</span><span class="va">Sigma_e</span>, <span class="fl">2</span><span class="op">)</span>     <span class="co"># error covariance across the three surrogates</span></span>
 <span><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
 <span><span class="co">#&gt; [1,] 1.77 0.88 1.06</span></span>
 <span><span class="co">#&gt; [2,] 0.88 2.28 1.05</span></span>
 <span><span class="co">#&gt; [3,] 1.06 1.05 3.15</span></span></code></pre></div>
-<p><code><a href="../reference/gls_combine.html">gls_combine()</a></code> collapses the three correlated surrogates
-into a single calibrated exposure with conditional variance
-<code>sigma_w_sq</code>.</p>
+<p><code><a href="../reference/gls_combine.html">gls_combine()</a></code> applies the per-surrogate back-transform
+<code>W_tilde_j = (W_j - alpha_{0j}) / alpha_{1j}</code> and then
+collapses the back-transformed surrogates with the GLS weights
+<code>omega = Sigma_tilde^{-1} 1 / (1' Sigma_tilde^{-1} 1)</code>. The
+combined exposure <code>W_bar</code> is the minimum-variance linear
+unbiased estimator of <code>X</code> available from the surrogates, and
+its conditional variance <code>sigma_w_sq</code> is the residual ME
+variance that SIMEX needs in the next step.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">[</span>, <span class="va">cal</span><span class="op">$</span><span class="va">W_cols</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gls_combine.html">gls_combine</a></span><span class="op">(</span><span class="va">W</span>, <span class="va">cal</span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span></span>
 <span><span class="va">dat</span><span class="op">$</span><span class="va">W_bar</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">W_bar</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>, <span class="fl">3</span><span class="op">)</span>    <span class="co"># residual ME variance fed to SIMEX</span></span>
 <span><span class="co">#&gt; [1] 1.517</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="simex-point-estimate">SIMEX point estimate<a class="anchor" aria-label="anchor" href="#simex-point-estimate"></a>
 </h2>
+<p>SIMEX (simulation-extrapolation) corrects the bias that arises from
+fitting the AFT-spline on the noisy <code>W_bar</code> instead of the
+unobserved <code>X</code>. For each value of <code>lambda</code> it adds
+extra Gaussian noise with variance <code>lambda * sigma_w_sq</code> to
+<code>W_bar</code>, refits the dose-response <code>B</code> times, and
+finally extrapolates the per-<code>lambda</code> curves back to
+<code>lambda = -1</code> (the zero-error case). Key knobs:</p>
+<ul>
+<li>
+<strong><code>lambda</code></strong> — the perturbation grid. A
+typical choice is <code>c(0.5, 1, 1.5, 2)</code>; including more values
+gives a more stable quadratic extrapolation.</li>
+<li>
+<strong><code>B</code></strong> — the number of Monte-Carlo
+perturbations <em>per</em> <code>lambda</code>. Small <code>B</code>
+(say <code>10</code>–<code>20</code>) is enough for a quick look but
+visibly noisy; <code>B = 100</code> is the practical floor for a
+publication-quality point estimate.</li>
+<li>
+<strong><code>v_ref</code></strong> — the reference values of the
+adjustment covariates at which the dose-response is reported (the curve
+is invariant to this choice up to a vertical shift, which we remove
+below by anchoring at the first grid point).</li>
+</ul>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">W_bar</span>, <span class="fl">0.02</span><span class="op">)</span>,</span>
 <span>              <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">W_bar</span>, <span class="fl">0.98</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
@@ -123,17 +177,39 @@ into a single calibrated exposure with conditional variance
 <span>  <span class="va">dat</span>, x_var <span class="op">=</span> <span class="st">"W_bar"</span>, sigma_w_sq <span class="op">=</span> <span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V1"</span>,<span class="st">"V2"</span>,<span class="st">"V3"</span>,<span class="st">"V4"</span><span class="op">)</span>,</span>
 <span>  v_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>V1 <span class="op">=</span> <span class="fl">30</span>, V2 <span class="op">=</span> <span class="fl">30</span>, V3 <span class="op">=</span> <span class="fl">0</span>, V4 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  lambda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  lambda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  x_grid <span class="op">=</span> <span class="va">x_grid</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="two-stage-bootstrap-interval">Two-stage bootstrap interval<a class="anchor" aria-label="anchor" href="#two-stage-bootstrap-interval"></a>
 </h2>
-<p><code><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap()</a></code> runs the SIMEX pipeline inside an
-outer loop that resamples both the validation and the main-study data,
-so its interval propagates Phase-1 and Phase-2 sampling variation
-jointly.</p>
+<p>A naive bootstrap of the main study alone underestimates uncertainty
+because it ignores the variability in the Phase-1 calibration. The
+<code><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap()</a></code> wraps the full pipeline above —
+resample the validation set, refit <code><a href="../reference/fit_me_calibration.html">fit_me_calibration()</a></code>,
+resample the main study, recompute <code>W_bar</code> and
+<code>sigma_w_sq</code>, then refit <code><a href="../reference/simex_aft_spline.html">simex_aft_spline()</a></code> — so
+the resulting pointwise interval propagates <em>both</em> sources of
+sampling variation. Key knobs:</p>
+<ul>
+<li>
+<strong><code>R</code></strong> — the number of outer (validation +
+main) bootstrap replicates. Each replicate runs a complete SIMEX
+pipeline, so this is the dominant cost. <code>R = 200</code> is a
+sensible default for real-data reporting; we use <code>R = 50</code>
+here for build time.</li>
+<li>
+<strong><code>B</code></strong> — the SIMEX Monte-Carlo size
+<em>inside</em> each bootstrap replicate. Because the outer replicates
+already average over Monte Carlo noise, a moderate inner <code>B</code>
+(20–50) is typically sufficient even when the headline point estimate
+uses <code>B = 100</code>.</li>
+<li>
+<strong><code>lambda</code></strong> — must match the grid used for
+the point estimate, so that the bootstrap interval is centred on the
+same extrapolation scheme.</li>
+</ul>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">boot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap</a></span><span class="op">(</span></span>
@@ -142,7 +218,7 @@ jointly.</p>
 <span>  x_var      <span class="op">=</span> <span class="st">"X_true"</span>,                <span class="co"># truth column for calibration</span></span>
 <span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V1"</span>,<span class="st">"V2"</span>,<span class="st">"V3"</span>,<span class="st">"V4"</span><span class="op">)</span>,</span>
 <span>  v_ref      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>V1 <span class="op">=</span> <span class="fl">30</span>, V2 <span class="op">=</span> <span class="fl">30</span>, V3 <span class="op">=</span> <span class="fl">0</span>, V4 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span>  lambda     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">10</span>, R <span class="op">=</span> <span class="fl">30</span>,</span>
+<span>  lambda     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">30</span>, R <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  x_grid     <span class="op">=</span> <span class="va">x_grid</span>,</span>
 <span>  verbose    <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
