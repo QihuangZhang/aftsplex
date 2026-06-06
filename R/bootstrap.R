@@ -111,9 +111,16 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
   W_cols <- extract_surrogate_cols(survival, surrogate_pattern)
   W_mat_full <- as.matrix(survival[, W_cols, drop = FALSE])
 
-  cal_full <- fit_me_calibration(validation, x_var = x_var,
-                                 surrogate_pattern = surrogate_pattern)
-  combo_full <- gls_combine(W_mat_full, cal_full)
+  combo_full <- tryCatch({
+    cal_full <- fit_me_calibration(validation, x_var = x_var,
+                                   surrogate_pattern = surrogate_pattern)
+    gls_combine(W_mat_full, cal_full)
+  }, error = function(e) {
+    stop("Full-sample Phase-1 calibration failed: ", conditionMessage(e),
+         ". This is usually a singular calibration from collinear or ",
+         "constant surrogate columns; check the '", surrogate_pattern,
+         "' columns in 'validation'.", call. = FALSE)
+  })
   W_bar_full <- combo_full$W_bar
 
   if (is.null(x_grid)) {
@@ -124,7 +131,7 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
   data_full <- survival
   data_full$W_bar <- W_bar_full
   sim_full <- tryCatch(
-    simex_aft_spline(
+    suppressWarnings(simex_aft_spline(
       data = data_full, x_var = "W_bar",
       sigma_w_sq = combo_full$sigma_w_sq,
       covariates = covariates, v_ref = v_ref,
@@ -132,7 +139,7 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
       outcome_var = outcome_var, status_var = status_var,
       lambda = lambda, B = B,
       dist = dist, x_grid = x_grid
-    ),
+    )),
     error = function(e) NULL
   )
   f_hat <- if (!is.null(sim_full)) sim_full$curve_simex else rep(NA_real_, length(x_grid))
@@ -145,42 +152,44 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
   # when `nested`), so it is the parallel unit. Calls below keep the same RNG
   # call order as the original loop, so the serial path is bit-for-bit unchanged.
   run_rep <- function(r) {
-    if (nested) {
-      v_idx <- sample.int(nrow(validation), replace = TRUE)
-      cal_r <- fit_me_calibration(validation[v_idx, , drop = FALSE],
-                                  x_var = x_var,
-                                  surrogate_pattern = surrogate_pattern)
-    } else {
-      cal_r <- cal_full
-    }
+    # The whole replicate - resampling, Phase-1 refit, GLS combine and SIMEX -
+    # is wrapped so that a degenerate resample (e.g. a singular calibration or
+    # a non-convergent fit) drops just that replicate to NA instead of
+    # aborting the entire bootstrap. Per-replicate warnings are muted; the
+    # caller reports a single summary of how many replicates were lost.
+    tryCatch(
+      suppressWarnings({
+        if (nested) {
+          v_idx <- sample.int(nrow(validation), replace = TRUE)
+          cal_r <- fit_me_calibration(validation[v_idx, , drop = FALSE],
+                                      x_var = x_var,
+                                      surrogate_pattern = surrogate_pattern)
+        } else {
+          cal_r <- cal_full
+        }
 
-    s_idx <- sample.int(nrow(survival), replace = TRUE)
-    data_r <- survival[s_idx, , drop = FALSE]
+        s_idx <- sample.int(nrow(survival), replace = TRUE)
+        data_r <- survival[s_idx, , drop = FALSE]
 
-    W_mat_r <- as.matrix(data_r[, W_cols, drop = FALSE])
-    combo_r <- gls_combine(W_mat_r, cal_r)
-    data_r$W_bar <- combo_r$W_bar
+        W_mat_r <- as.matrix(data_r[, W_cols, drop = FALSE])
+        combo_r <- gls_combine(W_mat_r, cal_r)
+        data_r$W_bar <- combo_r$W_bar
 
-    sim_r <- tryCatch(
-      simex_aft_spline(
-        data = data_r, x_var = "W_bar",
-        sigma_w_sq = combo_r$sigma_w_sq,
-        covariates = covariates, v_ref = v_ref,
-        df = df, knots = knots,
-        outcome_var = outcome_var, status_var = status_var,
-        lambda = lambda, B = B,
-        dist = dist, x_grid = x_grid
-      ),
+        sim_r <- simex_aft_spline(
+          data = data_r, x_var = "W_bar",
+          sigma_w_sq = combo_r$sigma_w_sq,
+          covariates = covariates, v_ref = v_ref,
+          df = df, knots = knots,
+          outcome_var = outcome_var, status_var = status_var,
+          lambda = lambda, B = B,
+          dist = dist, x_grid = x_grid
+        )
+        list(curve = sim_r$curve_simex,
+             sigma_w_sq = combo_r$sigma_w_sq,
+             omega = combo_r$omega)
+      }),
       error = function(e) NULL
     )
-
-    if (is.null(sim_r)) {
-      list(curve = rep(NA_real_, length(x_grid)),
-           sigma_w_sq = NA_real_, omega = rep(NA_real_, length(W_cols)))
-    } else {
-      list(curve = sim_r$curve_simex,
-           sigma_w_sq = combo_r$sigma_w_sq, omega = combo_r$omega)
-    }
   }
 
   if (workers > 1L) {
@@ -202,29 +211,83 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
     if (!is.null(pb)) { close(pb); message("") }
   }
 
+  ran <- !vapply(res_list, is.null, logical(1))
   for (r in seq_len(R)) {
-    curves[, r]        <- res_list[[r]]$curve
-    sigma_w_sq_boot[r] <- res_list[[r]]$sigma_w_sq
-    omega_boot[, r]    <- res_list[[r]]$omega
+    if (ran[r]) {
+      rr <- res_list[[r]]
+      curves[, r]        <- rr$curve
+      sigma_w_sq_boot[r] <- rr$sigma_w_sq
+      omega_boot[, r]    <- rr$omega
+    }
+  }
+  # A replicate is "effective" only if it yielded at least one finite curve
+  # value; a replicate can run (valid calibration) yet still produce an all-NA
+  # curve when every perturbed SIMEX fit fails to converge.
+  R_effective <- sum(colSums(is.finite(curves)) > 0L)
+
+  # Tell the user what went wrong rather than returning silent NAs (the curves
+  # of failed replicates are all NA and quietly dropped by na.rm downstream).
+  n_failed <- R - R_effective
+  if (R_effective == 0L) {
+    warning(sprintf(
+      paste0("All %d bootstrap replicates failed to produce a curve; every ",
+             "confidence-interval summary is NA. This usually indicates too ",
+             "few events, heavy censoring, or a singular calibration. Inspect ",
+             "the data, reduce 'df', or increase the sample size."), R),
+      call. = FALSE)
+  } else if (n_failed > 0L) {
+    warning(sprintf(
+      paste0("%d of %d bootstrap replicates failed and were dropped (NA); ",
+             "intervals are based on the remaining %d. Treat the interval ",
+             "with caution if this fraction is large."),
+      n_failed, R, R_effective), call. = FALSE)
+  }
+  grid_na <- rowSums(!is.na(curves)) == 0L
+  if (R_effective > 0L && any(grid_na)) {
+    warning(sprintf(
+      paste0("%d of %d grid point(s) have no finite bootstrap value (CI is NA ",
+             "there); these are typically spline extrapolations beyond the ",
+             "exposure support."),
+      sum(grid_na), length(x_grid)), call. = FALSE)
+  }
+  if (all(is.na(f_hat))) {
+    warning("The full-sample SIMEX point estimate ('f_hat') is entirely NA ",
+            "(the full-sample fit failed or could not be extrapolated); ",
+            "only bootstrap summaries are available.", call. = FALSE)
   }
 
   if (!is.null(x_ref)) {
-    f_hat  <- recenter_curve(f_hat, x_grid, x_ref)
-    curves <- apply(curves, 2, recenter_curve, x_grid = x_grid, x_ref = x_ref)
+    f_hat <- recenter_curve(f_hat, x_grid, x_ref)
+    for (r in seq_len(R)) {
+      if (!all(is.na(curves[, r]))) {
+        curves[, r] <- recenter_curve(curves[, r], x_grid, x_ref)
+      }
+    }
   }
 
   in_support <- support_flag(x_grid, W_bar_full, support_probs)
 
-  q025 <- apply(curves, 1, quantile, probs = 0.025, na.rm = TRUE)
-  q975 <- apply(curves, 1, quantile, probs = 0.975, na.rm = TRUE)
+  # Robust pointwise summaries: a grid row with no finite values yields NA
+  # instead of erroring (quantile() on an empty vector) or NaN (rowMeans).
+  safe_quantile <- function(v, p) {
+    v <- v[is.finite(v)]
+    if (length(v) == 0L) NA_real_ else unname(quantile(v, probs = p))
+  }
+  safe_median <- function(v) {
+    v <- v[is.finite(v)]
+    if (length(v) == 0L) NA_real_ else median(v)
+  }
+  q025 <- apply(curves, 1, safe_quantile, p = 0.025)
+  q975 <- apply(curves, 1, safe_quantile, p = 0.975)
   bs_mean <- rowMeans(curves, na.rm = TRUE)
+  bs_mean[is.nan(bs_mean)] <- NA_real_
 
   list(
     x_grid      = x_grid,
     f_hat       = f_hat,
     bs_mean     = bs_mean,
     curves      = curves,
-    median      = apply(curves, 1, median, na.rm = TRUE),
+    median      = apply(curves, 1, safe_median),
     lower       = q025,
     upper       = q975,
     lower_basic = 2 * f_hat - q975,
@@ -233,6 +296,6 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
     sigma_w_sq_boot = sigma_w_sq_boot,
     omega_boot      = omega_boot,
     in_support      = in_support,
-    R_effective     = sum(!is.na(curves[1, ]))
+    R_effective     = R_effective
   )
 }

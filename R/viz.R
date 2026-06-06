@@ -51,6 +51,29 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
     stop("Package 'ggplot2' is required for plot_curves(). ",
          "Install it via install.packages('ggplot2').")
   }
+
+  # Drop entirely-NA series (a failed SIMEX/bootstrap curve) with a clear
+  # message, rather than letting ggplot draw an empty panel and emit the
+  # cryptic "no non-missing arguments to max" warning at render time.
+  na_fit <- vapply(fits, function(f) all(!is.finite(f)), logical(1))
+  if (any(na_fit)) {
+    warning(sprintf(
+      "Curve(s) %s are entirely NA and were dropped from the plot; the fit or bootstrap likely failed (check R_effective and any failure warnings).",
+      paste(names(fits)[na_fit], collapse = ", ")), call. = FALSE)
+    fits <- fits[!na_fit]
+  }
+  if (length(fits) == 0L) {
+    stop("Nothing to plot: every curve is entirely NA. Inspect the SIMEX or ",
+         "bootstrap output (e.g. 'R_effective' and the failure warnings) ",
+         "before plotting.", call. = FALSE)
+  }
+  if (!is.null(ci) &&
+      (all(!is.finite(ci$lower)) || all(!is.finite(ci$upper)))) {
+    warning("Confidence interval is entirely NA; omitting the ribbon.",
+            call. = FALSE)
+    ci <- NULL
+  }
+
   if (isTRUE(time_ratio)) {
     fits <- lapply(fits, exp)
     if (!is.null(truth)) truth <- exp(truth)

@@ -118,11 +118,18 @@ simex_aft_spline <- function(
     rowMeans(boots, na.rm = TRUE)
   }
 
-  fit_naive <- fit_aft_spline(data, x_var,
-                              covariates = covariates,
-                              df = df, knots = knots,
-                              outcome_var = outcome_var, status_var = status_var,
-                              dist = dist)
+  fit_naive <- tryCatch(
+    fit_aft_spline(data, x_var,
+                   covariates = covariates,
+                   df = df, knots = knots,
+                   outcome_var = outcome_var, status_var = status_var,
+                   dist = dist),
+    error = function(e) {
+      stop("SIMEX naive AFT fit failed: ", conditionMessage(e),
+           ". This usually means too few events or a rank-deficient spline ",
+           "basis; reduce 'df' or check the data.", call. = FALSE)
+    }
+  )
   lp_naive <- predict_curve(fit_naive, x_grid, v_ref, x_var)
   curve_naive <- lp_naive - lp_naive[1]
 
@@ -144,11 +151,28 @@ simex_aft_spline <- function(
   curves_full <- cbind(curve_naive, curves_lambda)
   colnames(curves_full) <- paste0("lam=", format(lambda_full, digits = 2))
 
+  # Pointwise quadratic extrapolation to lambda = -1. Grid points whose
+  # lambda-curve has fewer than three finite values (e.g. perturbed fits that
+  # failed to converge) cannot support the quadratic and are returned as NA
+  # rather than triggering a rank-deficient fit or an "0 (non-NA) cases"
+  # error; the count is reported via a single warning.
+  n_unextrap <- 0L
   curve_simex <- apply(curves_full, 1, function(yv) {
-    df_extr <- data.frame(lam = lambda_full, y = yv)
+    ok <- is.finite(yv)
+    if (sum(ok) < 3L) {
+      n_unextrap <<- n_unextrap + 1L
+      return(NA_real_)
+    }
+    df_extr <- data.frame(lam = lambda_full[ok], y = yv[ok])
     fit_extr <- lm(y ~ lam + I(lam^2), data = df_extr)
     as.numeric(predict(fit_extr, newdata = data.frame(lam = -1)))
   })
+  if (n_unextrap > 0L) {
+    warning(sprintf(
+      paste0("SIMEX extrapolation undefined at %d of %d grid point(s) ",
+             "(too few converged perturbed fits); returned NA there."),
+      n_unextrap, length(x_grid)), call. = FALSE)
+  }
 
   if (!is.null(x_ref)) {
     curve_simex <- recenter_curve(curve_simex, x_grid, x_ref)

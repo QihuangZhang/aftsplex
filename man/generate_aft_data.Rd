@@ -8,6 +8,9 @@ generate_aft_data(
   n = 2000,
   n_val = 500,
   Sigma_u = build_sigma_u(),
+  x_mean = 10,
+  x_sd = sqrt(5),
+  f_args = list(),
   mu = 4,
   sigma_T = 0.8,
   gamma = c(0.1, -0.05, 0.3, -0.2),
@@ -21,7 +24,17 @@ generate_aft_data(
 \item{n_val}{Validation sample size.}
 
 \item{Sigma_u}{\verb{J x J} measurement-error covariance (default 3x3 with
-marginal variances \verb{(2.0, 2.5, 3.0)} and \code{rho = 0.4}).}
+marginal variances \verb{(2.0, 2.5, 3.0)} and \code{rho = 0.4}). Use
+\code{\link[=sigma_u_for_reliability]{sigma_u_for_reliability()}} to target a given reliability.}
+
+\item{x_mean, x_sd}{Mean and standard deviation of the latent exposure
+\code{X_true} (shared by the main and validation samples). Defaults \code{10} and
+\code{sqrt(5)} reproduce the original arbitrary-unit scale; set e.g.
+\code{x_mean = 300}, \code{x_sd = 75} for a daily-minutes scale.}
+
+\item{f_args}{Named list of extra arguments forwarded to \code{\link[=f_true]{f_true()}} for the
+dose-response (e.g. \code{list(x_min = 150, alpha = 0.01)} on a minutes scale).
+Default \code{list()} uses the \code{\link[=f_true]{f_true()}} defaults.}
 
 \item{mu}{AFT intercept.}
 

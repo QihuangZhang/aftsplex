@@ -31,6 +31,7 @@ reference:
     contents:
       - f_true
       - build_sigma_u
+      - sigma_u_for_reliability
       - generate_aft_data
 
   - title: Phase 1 — Measurement-error calibration
@@ -70,3 +71,8 @@ articles:
     contents:
       - simulation-study
       - sensitivity-df
+      - coverage-diagnostics
+  - title: Troubleshooting
+    navbar: ~
+    contents:
+      - faq

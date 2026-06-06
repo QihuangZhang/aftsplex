@@ -43,6 +43,48 @@ build_sigma_u <- function(sigma_u_sq = c(2.0, 2.5, 3.0), rho = 0.4) {
   outer(sds, sds) * R
 }
 
+#' Build a measurement-error covariance targeting a given reliability
+#'
+#' Returns a `Sigma_u` (via [build_sigma_u()]) whose surrogate-measurement
+#' error variances are scaled so the **mean per-surrogate reliability** equals
+#' `reliability`. Surrogate reliability is the intraclass-style ratio
+#' `var_x / (var_x + var_U_j)`; the relative surrogate qualities in `ratios`
+#' are preserved (so the surrogates stay unequal for the per-surrogate ladder),
+#' and a single multiplicative scale is solved by [stats::uniroot()] to hit the
+#' target average. Use it to sweep measurement quality in a simulation, e.g.
+#' `reliability` in `c(0.5, 0.65, 0.8)`.
+#'
+#' @param reliability Target mean per-surrogate reliability in `(0, 1)`.
+#' @param var_x Variance of the latent exposure `X` (e.g. `x_sd^2` passed to
+#'   [generate_aft_data()]).
+#' @param ratios Relative marginal error variances across the surrogates;
+#'   their scale is solved for, only their ratios matter. Default
+#'   `c(2.0, 2.5, 3.0)` matches [build_sigma_u()].
+#' @param rho Common pairwise error correlation, passed to [build_sigma_u()].
+#'
+#' @return A `J x J` covariance matrix suitable for the `Sigma_u` argument of
+#'   [generate_aft_data()].
+#'
+#' @examples
+#' S <- sigma_u_for_reliability(0.65, var_x = 75^2)
+#' # mean per-surrogate reliability is ~0.65:
+#' mean(75^2 / (75^2 + diag(S)))
+#'
+#' @export
+sigma_u_for_reliability <- function(reliability, var_x,
+                                    ratios = c(2.0, 2.5, 3.0), rho = 0.4) {
+  if (reliability <= 0 || reliability >= 1) {
+    stop("'reliability' must be in (0, 1).", call. = FALSE)
+  }
+  mean_rel <- function(scale) mean(var_x / (var_x + scale * ratios))
+  # mean_rel is 1 at scale -> 0 and 0 at scale -> Inf, so a root exists.
+  upper <- 1
+  while (mean_rel(upper) > reliability) upper <- upper * 2
+  scale <- stats::uniroot(function(s) mean_rel(s) - reliability,
+                          interval = c(0, upper))$root
+  build_sigma_u(scale * ratios, rho = rho)
+}
+
 #' Generate one Monte Carlo replicate of the AFT-spline-SIMEX scenario
 #'
 #' Produces a main-study survival sample and an external validation sample
@@ -61,7 +103,15 @@ build_sigma_u <- function(sigma_u_sq = c(2.0, 2.5, 3.0), rho = 0.4) {
 #' @param n Main-study sample size.
 #' @param n_val Validation sample size.
 #' @param Sigma_u `J x J` measurement-error covariance (default 3x3 with
-#'   marginal variances `(2.0, 2.5, 3.0)` and `rho = 0.4`).
+#'   marginal variances `(2.0, 2.5, 3.0)` and `rho = 0.4`). Use
+#'   [sigma_u_for_reliability()] to target a given reliability.
+#' @param x_mean,x_sd Mean and standard deviation of the latent exposure
+#'   `X_true` (shared by the main and validation samples). Defaults `10` and
+#'   `sqrt(5)` reproduce the original arbitrary-unit scale; set e.g.
+#'   `x_mean = 300`, `x_sd = 75` for a daily-minutes scale.
+#' @param f_args Named list of extra arguments forwarded to [f_true()] for the
+#'   dose-response (e.g. `list(x_min = 150, alpha = 0.01)` on a minutes scale).
+#'   Default `list()` uses the [f_true()] defaults.
 #' @param mu AFT intercept.
 #' @param sigma_T AFT log-scale standard deviation.
 #' @param gamma Numeric vector of length 4: confounder coefficients in the
@@ -85,6 +135,9 @@ generate_aft_data <- function(
   n          = 2000,
   n_val      = 500,
   Sigma_u    = build_sigma_u(),
+  x_mean     = 10,
+  x_sd       = sqrt(5),
+  f_args     = list(),
   mu         = 4,
   sigma_T    = 0.8,
   gamma      = c(0.10, -0.05, 0.30, -0.20),
@@ -93,8 +146,9 @@ generate_aft_data <- function(
 ) {
   if (!is.null(seed)) set.seed(seed)
   J <- nrow(Sigma_u)
+  f_eval <- function(x) do.call(f_true, c(list(x), f_args))
 
-  X_true <- rnorm(n, mean = 10, sd = sqrt(5))
+  X_true <- rnorm(n, mean = x_mean, sd = x_sd)
   V <- cbind(
     V1 = rnorm(n, 30, 5),
     V2 = rnorm(n, 30, 5),
@@ -102,7 +156,7 @@ generate_aft_data <- function(
     V4 = rbinom(n, 1, 0.8)
   )
 
-  log_T <- mu + f_true(X_true) + V %*% gamma + sigma_T * rnorm(n)
+  log_T <- mu + f_eval(X_true) + V %*% gamma + sigma_T * rnorm(n)
   T_event <- exp(log_T)
   C_time  <- rexp(n, rate = cens_rate)
   T_obs   <- pmin(T_event, C_time)
@@ -112,7 +166,7 @@ generate_aft_data <- function(
   W <- X_true + U
   colnames(W) <- paste0("W", seq_len(J))
 
-  X_val <- rnorm(n_val, mean = 10, sd = sqrt(5))
+  X_val <- rnorm(n_val, mean = x_mean, sd = x_sd)
   U_val <- MASS::mvrnorm(n_val, mu = rep(0, J), Sigma = Sigma_u)
   W_val <- X_val + U_val
   colnames(W_val) <- paste0("W", seq_len(J))
@@ -122,7 +176,8 @@ generate_aft_data <- function(
     validation = data.frame(X_true = X_val, W_val),
     truth = list(
       mu = mu, sigma_T = sigma_T, gamma = gamma,
-      Sigma_u = Sigma_u, f_true = f_true
+      Sigma_u = Sigma_u, x_mean = x_mean, x_sd = x_sd,
+      f_true = f_true, f_args = f_args
     )
   )
 }
