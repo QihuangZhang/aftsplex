@@ -16,6 +16,9 @@ generate_aft_data(
   n = 2000,
   n_val = 500,
   Sigma_u = build_sigma_u(),
+  x_mean = 10,
+  x_sd = sqrt(5),
+  f_args = list(),
   mu = 4,
   sigma_T = 0.8,
   gamma = c(0.1, -0.05, 0.3, -0.2),
@@ -37,7 +40,26 @@ generate_aft_data(
 - Sigma_u:
 
   `J x J` measurement-error covariance (default 3x3 with marginal
-  variances `(2.0, 2.5, 3.0)` and `rho = 0.4`).
+  variances `(2.0, 2.5, 3.0)` and `rho = 0.4`). Use
+  [`sigma_u_for_reliability()`](https://qihuangzhang.github.io/aftsplex/reference/sigma_u_for_reliability.md)
+  to target a given reliability.
+
+- x_mean, x_sd:
+
+  Mean and standard deviation of the latent exposure `X_true` (shared by
+  the main and validation samples). Defaults `10` and `sqrt(5)`
+  reproduce the original arbitrary-unit scale; set e.g. `x_mean = 300`,
+  `x_sd = 75` for a daily-minutes scale.
+
+- f_args:
+
+  Named list of extra arguments forwarded to
+  [`f_true()`](https://qihuangzhang.github.io/aftsplex/reference/f_true.md)
+  for the dose-response (e.g. `list(x_min = 150, alpha = 0.01)` on a
+  minutes scale). Default [`list()`](https://rdrr.io/r/base/list.html)
+  uses the
+  [`f_true()`](https://qihuangzhang.github.io/aftsplex/reference/f_true.md)
+  defaults.
 
 - mu:
 
@@ -87,12 +109,12 @@ names(sim)
 #> [1] "survival"   "validation" "truth"     
 head(sim$survival)
 #>        T_obs delta    X_true        W1        W2        W3       V1       V2 V3
-#> 1  156.71416     1  8.599207  8.357699  7.655838  9.125222 32.04701 35.37220  1
-#> 2  110.70489     1 10.410639  9.461024 11.088390 10.384565 38.44437 39.47827  0
-#> 3  333.80655     0  8.131478  6.858229  6.904194  8.057625 37.93294 26.98501  0
-#> 4  443.05466     1 13.567156 12.850575 11.713557 13.364571 28.34546 28.04566  1
-#> 5   73.07738     1 10.736802 10.992466 10.777710 13.245776 18.57382 27.91889  0
-#> 6 1150.60870     1  8.165377  7.734338  7.117875  9.644362 42.48831 28.12171  0
+#> 1  156.71416     1  8.599207  9.042557  9.435666  8.025849 32.04701 35.37220  1
+#> 2  110.70489     1 10.410639  9.409792 10.765985 10.894197 38.44437 39.47827  0
+#> 3  333.80655     0  8.131478  8.497433  9.839325  8.418137 37.93294 26.98501  0
+#> 4  443.05466     1 13.567156 14.752046 15.172707 13.659899 28.34546 28.04566  1
+#> 5   73.07738     1 10.736802  9.950293 10.977064  8.352338 18.57382 27.91889  0
+#> 6 1150.60870     1  8.165377  8.262311  9.389844  6.764756 42.48831 28.12171  0
 #>   V4
 #> 1  1
 #> 2  1

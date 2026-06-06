@@ -13,7 +13,7 @@ sigma_w_sq = (1' Sigma_tilde^-1 1)^-1."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,8 @@ sigma_w_sq = (1' Sigma_tilde^-1 1)^-1."></head><body>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">Troubleshooting: warnings and error messages</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -85,7 +87,7 @@ produce a single calibrated exposure with conditional variance
 <span class="r-in"><span><span class="va">W</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">[</span>, <span class="va">cal</span><span class="op">$</span><span class="va">W_cols</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">gls_combine</span><span class="op">(</span><span class="va">W</span>, <span class="va">cal</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">W_bar</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  7.691021  9.013342  5.898863 14.904778 10.178092  7.391369</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  9.435341 11.776481  9.556977 12.020854 11.680636  9.901770</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

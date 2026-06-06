@@ -9,6 +9,8 @@ Helpers for the simulation studies used in the manuscript.
 - [`build_sigma_u()`](https://qihuangzhang.github.io/aftsplex/reference/build_sigma_u.md)
   : Build a measurement-error covariance from marginal variances and a
   correlation
+- [`sigma_u_for_reliability()`](https://qihuangzhang.github.io/aftsplex/reference/sigma_u_for_reliability.md)
+  : Build a measurement-error covariance targeting a given reliability
 - [`generate_aft_data()`](https://qihuangzhang.github.io/aftsplex/reference/generate_aft_data.md)
   : Generate one Monte Carlo replicate of the AFT-spline-SIMEX scenario
 

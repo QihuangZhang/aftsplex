@@ -32,14 +32,10 @@ three noisy surrogates `W1, W2, W3` are.
 
 sim <- generate_aft_data(n = 1000, n_val = 300, seed = 2026)
 head(sim$survival, 3)
-#>      T_obs delta    X_true        W1        W2        W3       V1       V2 V3
-#> 1 826.9194     0 11.164073 12.580249 10.004400 12.104367 38.85282 30.99448  1
-#> 2 415.8046     1  7.585738  7.132891  7.833517  9.493273 34.50189 30.82174  1
-#> 3 879.5703     0 10.311346 10.273132 12.143004 11.181265 36.65207 30.40219  1
-#>   V4
-#> 1  1
-#> 2  1
-#> 3  1
+#>      T_obs delta    X_true        W1        W2       W3       V1       V2 V3 V4
+#> 1 826.9194     0 11.164073 12.458170 10.888199 9.588079 38.85282 30.99448  1  1
+#> 2 415.8046     1  7.585738  6.493913  8.156123 6.040509 34.50189 30.82174  1  1
+#> 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1
 ```
 
 ## Phase-1: Parameter estimation and surrogates aggregation
@@ -60,12 +56,12 @@ scale shift that the GLS step will correct.
 
 cal <- fit_me_calibration(sim$validation)
 cal$alpha1                # close to 1: surrogates are essentially unbiased
-#> [1] 0.9523440 1.0131569 0.9709117
+#> [1] 0.9760726 1.0247585 1.0458784
 round(cal$Sigma_e, 2)     # error covariance across the three surrogates
 #>      [,1] [,2] [,3]
-#> [1,] 1.90 1.05 0.85
-#> [2,] 1.05 2.59 1.14
-#> [3,] 0.85 1.14 2.68
+#> [1,] 1.94 1.00 1.01
+#> [2,] 1.00 2.63 1.06
+#> [3,] 1.01 1.06 2.60
 ```
 
 [`gls_combine()`](https://qihuangzhang.github.io/aftsplex/reference/gls_combine.md)
@@ -85,7 +81,7 @@ g <- gls_combine(W, cal)
 dat <- sim$survival
 dat$W_bar <- g$W_bar
 round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
-#> [1] 1.501
+#> [1] 1.42
 ```
 
 ## Phase-2: SIMEX point estimate
@@ -145,14 +141,14 @@ summary(s)
 #>   n observations:  1000               Spline df:    4
 #>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
 #>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
-#>   Inner B:         100                sigma_w_sq:   1.5013
+#>   Inner B:         100                sigma_w_sq:   1.4200
 #> 
 #> Centred dose-response (anchored at min(x_grid)):
 #>               5%   25%    50%    75%    95%
-#> x          5.516 7.591 10.185 12.779 14.855
-#> Naive      0.062 0.254  0.351  0.389  0.395
-#> SIMEX      0.094 0.380  0.493  0.535  0.538
-#> Correction 0.033 0.126  0.142  0.145  0.143
+#> x          5.583 7.619 10.164 12.710 14.746
+#> Naive      0.029 0.130  0.201  0.231  0.329
+#> SIMEX      0.043 0.197  0.304  0.293  0.450
+#> Correction 0.013 0.067  0.104  0.063  0.120
 ```
 
 A bare [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the

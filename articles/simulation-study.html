@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,8 @@
 <li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">Troubleshooting: warnings and error messages</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -101,9 +103,9 @@ higher locally to reproduce.</p>
 <span>              length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">truth</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f_true.html">f_true</a></span><span class="op">(</span><span class="va">x_grid</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="../reference/f_true.html">f_true</a></span><span class="op">(</span><span class="va">x_grid</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">V_REF</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>V1 <span class="op">=</span> <span class="fl">30</span>, V2 <span class="op">=</span> <span class="fl">30</span>, V3 <span class="op">=</span> <span class="fl">0</span>, V4 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="single-replicate-driver">Single-replicate driver<a class="anchor" aria-label="anchor" href="#single-replicate-driver"></a>
-</h2>
+<div class="section level3">
+<h3 id="single-replicate-driver">Single-replicate driver<a class="anchor" aria-label="anchor" href="#single-replicate-driver"></a>
+</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">run_one</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">seed</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">N</span>, n_val <span class="op">=</span> <span class="va">N_VAL</span>, seed <span class="op">=</span> <span class="va">seed</span><span class="op">)</span></span>
@@ -130,20 +132,20 @@ higher locally to reproduce.</p>
 <span>       SIMEX  <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">curve_simex</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="run-the-monte-carlo">Run the Monte Carlo<a class="anchor" aria-label="anchor" href="#run-the-monte-carlo"></a>
-</h2>
+<div class="section level3">
+<h3 id="run-the-monte-carlo">Run the Monte Carlo<a class="anchor" aria-label="anchor" href="#run-the-monte-carlo"></a>
+</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">t0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">N_REP</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="fu">run_one</span><span class="op">(</span><span class="fl">20260601L</span> <span class="op">+</span> <span class="va">i</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">elapsed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">t0</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">elapsed</span></span>
-<span><span class="co">#&gt; Time difference of 16.31279 secs</span></span></code></pre></div>
+<span><span class="co">#&gt; Time difference of 14.99304 secs</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="ise-summary">ISE summary<a class="anchor" aria-label="anchor" href="#ise-summary"></a>
-</h2>
+<div class="section level3">
+<h3 id="ise-summary">ISE summary<a class="anchor" aria-label="anchor" href="#ise-summary"></a>
+</h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">methods</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Oracle"</span>, <span class="st">"Naive"</span>, <span class="st">"SIMEX"</span><span class="op">)</span></span>
 <span><span class="va">ise_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">res</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
@@ -161,20 +163,157 @@ higher locally to reproduce.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt;         Mean   MCSE Median</span></span>
 <span><span class="co">#&gt; Oracle 0.065 0.0108  0.043</span></span>
-<span><span class="co">#&gt; Naive  0.234 0.0298  0.233</span></span>
-<span><span class="co">#&gt; SIMEX  0.127 0.0214  0.110</span></span></code></pre></div>
+<span><span class="co">#&gt; Naive  0.181 0.0254  0.140</span></span>
+<span><span class="co">#&gt; SIMEX  0.084 0.0162  0.057</span></span></code></pre></div>
 <p>The pattern matches the manuscript: Naive carries 2-3x the ISE of
 Oracle (attenuation), and SIMEX recovers most of that gap.</p>
 </div>
-<div class="section level2">
-<h2 id="mean-curves">Mean curves<a class="anchor" aria-label="anchor" href="#mean-curves"></a>
-</h2>
+<div class="section level3">
+<h3 id="mean-curves">Mean curves<a class="anchor" aria-label="anchor" href="#mean-curves"></a>
+</h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mean_curve</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">res</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">methods</span>, <span class="va">mean_curve</span><span class="op">)</span>, <span class="va">methods</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">truth</span>, <span class="va">fits</span>,</span>
 <span>            title <span class="op">=</span> <span class="st">"Mean SIMEX / Naive / Oracle curves across simulated replicates"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="simulation-study_files/figure-html/curves-1.png" class="r-plt" alt="" width="672"></p>
+</div>
+<div class="section level2">
+<h2 id="a-daily-minutes-scale-mean-300-min">A daily-minutes scale (mean ~300 min)<a class="anchor" aria-label="anchor" href="#a-daily-minutes-scale-mean-300-min"></a>
+</h2>
+<p>The arbitrary-unit scale above keeps the code minimal, but the
+manuscript expresses the exposure as <strong>daily
+light-physical-activity minutes</strong>. The DGP arguments
+<code>x_mean</code>, <code>x_sd</code>, and <code>f_args</code>
+re-express the same model on that scale – mean ~300 min, a lower
+threshold of 150 min below which the dose-response is flat – without
+touching the package defaults.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">SC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_mean <span class="op">=</span> <span class="fl">300</span>, x_sd <span class="op">=</span> <span class="fl">75</span>,</span>
+<span>           f_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fl">150</span>, alpha <span class="op">=</span> <span class="fl">0.01</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">f_min</span>     <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">f_true</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="va">SC</span><span class="op">$</span><span class="va">f_args</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x_grid_m</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_mean</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span><span class="op">)</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.95</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_mean</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">80</span><span class="op">)</span></span>
+<span><span class="va">truth_m</span>   <span class="op">&lt;-</span> <span class="fu">f_min</span><span class="op">(</span><span class="va">x_grid_m</span><span class="op">)</span> <span class="op">-</span> <span class="fu">f_min</span><span class="op">(</span><span class="va">x_grid_m</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">N_REP_M</span> <span class="op">&lt;-</span> <span class="fl">10L</span>        <span class="co"># small for a fast build; raise locally for the manuscript</span></span>
+<span><span class="va">N_M</span>     <span class="op">&lt;-</span> <span class="fl">1200</span></span>
+<span><span class="va">N_VAL_M</span> <span class="op">&lt;-</span> <span class="fl">350</span></span>
+<span></span>
+<span><span class="va">ise_of</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">curve</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">e</span>  <span class="op">&lt;-</span> <span class="va">curve</span> <span class="op">-</span> <span class="va">truth_m</span></span>
+<span>  <span class="va">dx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">x_grid_m</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="op">(</span><span class="va">e</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">e</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span> <span class="op">/</span> <span class="fl">4</span><span class="op">)</span> <span class="op">*</span> <span class="va">dx</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="reliability-sweep">Reliability sweep<a class="anchor" aria-label="anchor" href="#reliability-sweep"></a>
+</h3>
+<p>How well does SIMEX recover the curve as the surrogate gets noisier?
+We sweep the <strong>mean per-surrogate reliability</strong> over
+<code>0.5, 0.65, 0.8</code> (poor -&gt; good), holding everything else
+fixed; <code><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code> returns the matching
+measurement-error covariance.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">run_full</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">seed</span>, <span class="va">Sigma_u</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">N_M</span>, n_val <span class="op">=</span> <span class="va">N_VAL_M</span>, Sigma_u <span class="op">=</span> <span class="va">Sigma_u</span>,</span>
+<span>                           x_mean <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_mean</span>, x_sd <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span>,</span>
+<span>                           f_args <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">f_args</span>, seed <span class="op">=</span> <span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_me_calibration.html">fit_me_calibration</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span><span class="op">)</span></span>
+<span>  <span class="va">W</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">[</span>, <span class="va">cal</span><span class="op">$</span><span class="va">W_cols</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">g</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gls_combine.html">gls_combine</a></span><span class="op">(</span><span class="va">W</span>, <span class="va">cal</span><span class="op">)</span></span>
+<span>  <span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span>; <span class="va">dat</span><span class="op">$</span><span class="va">W_bar</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">W_bar</span></span>
+<span></span>
+<span>  <span class="va">fo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_aft_spline.html">fit_aft_spline</a></span><span class="op">(</span><span class="va">dat</span>, <span class="st">"X_true"</span>, covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_REF</span><span class="op">)</span>, df <span class="op">=</span> <span class="va">DF</span><span class="op">)</span></span>
+<span>  <span class="va">fn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_aft_spline.html">fit_aft_spline</a></span><span class="op">(</span><span class="va">dat</span>, <span class="st">"W_bar"</span>,  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_REF</span><span class="op">)</span>, df <span class="op">=</span> <span class="va">DF</span><span class="op">)</span></span>
+<span>  <span class="va">lo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predict_curve.html">predict_curve</a></span><span class="op">(</span><span class="va">fo</span>, <span class="va">x_grid_m</span>, <span class="va">V_REF</span>, <span class="st">"X_true"</span><span class="op">)</span></span>
+<span>  <span class="va">ln</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predict_curve.html">predict_curve</a></span><span class="op">(</span><span class="va">fn</span>, <span class="va">x_grid_m</span>, <span class="va">V_REF</span>, <span class="st">"W_bar"</span><span class="op">)</span></span>
+<span>  <span class="va">s</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simex_aft_spline.html">simex_aft_spline</a></span><span class="op">(</span><span class="va">dat</span>, <span class="st">"W_bar"</span>, sigma_w_sq <span class="op">=</span> <span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>,</span>
+<span>                         covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_REF</span><span class="op">)</span>, v_ref <span class="op">=</span> <span class="va">V_REF</span>,</span>
+<span>                         lambda <span class="op">=</span> <span class="va">LAMBDA</span>, B <span class="op">=</span> <span class="va">B_INNER</span>, x_grid <span class="op">=</span> <span class="va">x_grid_m</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Oracle <span class="op">=</span> <span class="va">lo</span> <span class="op">-</span> <span class="va">lo</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, Naive <span class="op">=</span> <span class="va">ln</span> <span class="op">-</span> <span class="va">ln</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, SIMEX <span class="op">=</span> <span class="va">s</span><span class="op">$</span><span class="va">curve_simex</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">rel_levels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.65</span>, <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="va">sweep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">rel_levels</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Su</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability</a></span><span class="op">(</span><span class="va">r</span>, var_x <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="va">rep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">N_REP_M</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="fu">run_full</span><span class="op">(</span><span class="fl">70000L</span> <span class="op">+</span> <span class="va">i</span>, <span class="va">Su</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">methods</span>, <span class="kw">function</span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">rep</span>, <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="fu">ise_of</span><span class="op">(</span><span class="va">z</span><span class="op">[[</span><span class="va">m</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>         <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sweep</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"reliability = %.2f"</span>, <span class="va">rel_levels</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">sweep</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                    Oracle Naive SIMEX</span></span>
+<span><span class="co">#&gt; reliability = 0.50  1.189 5.854 3.503</span></span>
+<span><span class="co">#&gt; reliability = 0.65  1.189 3.380 2.399</span></span>
+<span><span class="co">#&gt; reliability = 0.80  1.189 1.985 1.747</span></span></code></pre></div>
+<p>As reliability falls, the <strong>Naive</strong> ISE inflates sharply
+from worsening attenuation, and <strong>SIMEX</strong> removes a large
+part of that excess – roughly halving the Naive ISE at reliability 0.5.
+The gain shrinks as reliability improves: by 0.8 the naive attenuation
+is already small, so the correction has little left to do (and its
+extrapolation variance can offset the tiny remaining bias). SIMEX earns
+its keep most when the measurement is poorest.</p>
+</div>
+<div class="section level3">
+<h3 id="per-surrogate-ladder">Per-surrogate ladder<a class="anchor" aria-label="anchor" href="#per-surrogate-ladder"></a>
+</h3>
+<p>The GLS combiner pools the three surrogates. Here we give the
+surrogates distinctly different quality (relative error variances
+<code>1 : 3 : 6</code>, a mean reliability of 0.65 spanning roughly 0.84
+down to 0.47) and run the estimator on each surrogate
+<strong>alone</strong> (<code>surrogate_pattern = "^W1$"</code>, etc.)
+and on the combiner. This uses the existing
+<code>surrogate_pattern</code> argument – no engine change.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">patterns</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>W1 <span class="op">=</span> <span class="st">"^W1$"</span>, W2 <span class="op">=</span> <span class="st">"^W2$"</span>, W3 <span class="op">=</span> <span class="st">"^W3$"</span>, Combined <span class="op">=</span> <span class="st">"^W[0-9]+$"</span><span class="op">)</span></span>
+<span><span class="va">Su_mid</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability</a></span><span class="op">(</span><span class="fl">0.65</span>, var_x <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span><span class="op">^</span><span class="fl">2</span>, ratios <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ladder_curves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">N_REP_M</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">N_M</span>, n_val <span class="op">=</span> <span class="va">N_VAL_M</span>, Sigma_u <span class="op">=</span> <span class="va">Su_mid</span>,</span>
+<span>                           x_mean <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_mean</span>, x_sd <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span>,</span>
+<span>                           f_args <span class="op">=</span> <span class="va">SC</span><span class="op">$</span><span class="va">f_args</span>, seed <span class="op">=</span> <span class="fl">80000L</span> <span class="op">+</span> <span class="va">i</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">patterns</span>, <span class="kw">function</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_me_calibration.html">fit_me_calibration</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span>, surrogate_pattern <span class="op">=</span> <span class="va">p</span><span class="op">)</span></span>
+<span>    <span class="va">W</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">[</span>, <span class="va">cal</span><span class="op">$</span><span class="va">W_cols</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">g</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gls_combine.html">gls_combine</a></span><span class="op">(</span><span class="va">W</span>, <span class="va">cal</span><span class="op">)</span></span>
+<span>    <span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span>; <span class="va">dat</span><span class="op">$</span><span class="va">W_bar</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">W_bar</span></span>
+<span>    <span class="va">s</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simex_aft_spline.html">simex_aft_spline</a></span><span class="op">(</span><span class="va">dat</span>, <span class="st">"W_bar"</span>, sigma_w_sq <span class="op">=</span> <span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>,</span>
+<span>                            covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_REF</span><span class="op">)</span>, v_ref <span class="op">=</span> <span class="va">V_REF</span>,</span>
+<span>                            lambda <span class="op">=</span> <span class="va">LAMBDA</span>, B <span class="op">=</span> <span class="va">B_INNER</span>, x_grid <span class="op">=</span> <span class="va">x_grid_m</span><span class="op">)</span></span>
+<span>    <span class="va">s</span><span class="op">$</span><span class="va">curve_simex</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ladder_ise</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">ladder_curves</span>,</span>
+<span>                              <span class="kw">function</span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">2</span>, <span class="va">ise_of</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>SIMEX_ISE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">ladder_ise</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          SIMEX_ISE</span></span>
+<span><span class="co">#&gt; W1           1.129</span></span>
+<span><span class="co">#&gt; W2           2.502</span></span>
+<span><span class="co">#&gt; W3           3.111</span></span>
+<span><span class="co">#&gt; Combined     1.764</span></span></code></pre></div>
+<p>The single-surrogate ISE ranks by reliability (<code>W1</code> best,
+<code>W3</code> noisiest), and the combiner sits at or below even the
+best single channel – the payoff for pooling correlated
+measurements.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mean_ladder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">patterns</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">nm</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">ladder_curves</span>, <span class="kw">function</span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="va">M</span><span class="op">[</span>, <span class="va">nm</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stagill_palette.html">stagill_palette</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">ladder_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>W1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">pal</span><span class="op">[</span><span class="st">"MutedTeal"</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                 W2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">pal</span><span class="op">[</span><span class="st">"ApricotCream"</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                 W3 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">pal</span><span class="op">[</span><span class="st">"BurntPeach"</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                 Combined <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">pal</span><span class="op">[</span><span class="st">"TwilightIndigo"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plot_curves.html">plot_curves</a></span><span class="op">(</span><span class="va">x_grid_m</span>, <span class="va">truth_m</span>,</span>
+<span>            fits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">mean_ladder</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            colors <span class="op">=</span> <span class="va">ladder_cols</span>,</span>
+<span>            x_lab <span class="op">=</span> <span class="st">"Daily LPA (minutes)"</span>,</span>
+<span>            title <span class="op">=</span> <span class="st">"Per-surrogate ladder: single channels vs the GLS combiner"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="simulation-study_files/figure-html/ladder-plot-1.png" class="r-plt" alt="" width="672"></p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

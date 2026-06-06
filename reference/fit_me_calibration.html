@@ -13,7 +13,7 @@ regression (SUR) and admits closed-form ML."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,8 @@ regression (SUR) and admits closed-form ML."></head><body>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">Troubleshooting: warnings and error messages</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -93,16 +95,16 @@ in <code>x_var</code> and the surrogate columns matched by <code>surrogate_patte
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">100</span>, n_val <span class="op">=</span> <span class="fl">200</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">fit_me_calibration</span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $alpha0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2168513 0.8582034 0.3415081</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -0.6927750 -0.6061218 -0.2298794</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $alpha1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.9775446 0.9069137 0.9746490</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.071567 1.067074 1.013832</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $Sigma_e</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           [,1]      [,2]      [,3]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 2.1941712 0.8586757 0.9393987</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] 0.8586757 2.4148451 0.9587875</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] 0.9393987 0.9587875 2.7902613</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,] 1.9347981 0.7575053 0.8004875</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,] 0.7575053 2.5947853 1.0883172</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,] 0.8004875 1.0883172 2.8696944</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $W_cols</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "W1" "W2" "W3"</span>

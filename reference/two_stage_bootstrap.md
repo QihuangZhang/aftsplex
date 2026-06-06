@@ -187,7 +187,7 @@ boot <- two_stage_bootstrap(
 )
 head(boot$f_hat)
 #>          1          2          3          4          5          6 
-#> 0.00000000 0.04065205 0.08077468 0.12033244 0.15928984 0.19761142 
+#> 0.00000000 0.01912404 0.03855214 0.05830025 0.07838434 0.09882034 
 
 # Phase-1 contribution to CI width: compare double vs single-stage.
 single <- two_stage_bootstrap(
@@ -196,6 +196,6 @@ single <- two_stage_bootstrap(
   lambda = c(0.5, 1, 1.5, 2), B = 5, R = 10, nested = FALSE
 )
 mean(boot$upper - boot$lower) / mean(single$upper - single$lower)
-#> [1] 1.286997
+#> [1] 1.056749
 # }
 ```

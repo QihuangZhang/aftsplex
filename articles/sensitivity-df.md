@@ -104,13 +104,13 @@ aic_table <- data.frame(
 )
 aic_table
 #>      df  k    logLik      AIC
-#> df=4  4 10 -10819.60 21659.19
-#> df=5  5 11 -10819.34 21660.69
-#> df=6  6 12 -10818.07 21660.14
-#> df=8  8 14 -10816.32 21660.64
+#> df=4  4 10 -10821.13 21662.26
+#> df=5  5 11 -10818.41 21658.81
+#> df=6  6 12 -10817.91 21659.81
+#> df=8  8 14 -10817.63 21663.26
 df_star <- df_grid[which.min(aic_table$AIC)]
 df_star
-#> [1] 4
+#> [1] 5
 ```
 
 `df_star` is the AIC-minimising spline df — the value we would use for

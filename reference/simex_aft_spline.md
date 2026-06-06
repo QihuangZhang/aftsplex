@@ -167,13 +167,13 @@ summary(s)
 #>   n observations:  500                Spline df:    4
 #>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
 #>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
-#>   Inner B:         10                 sigma_w_sq:   1.6440
+#>   Inner B:         10                 sigma_w_sq:   1.2659
 #> 
 #> Centred dose-response (anchored at min(x_grid)):
 #>               5%   25%    50%    75%    95%
-#> x          3.705 7.004 11.127 15.250 18.548
-#> Naive      0.201 0.843  0.974  1.086  1.157
-#> SIMEX      0.228 1.084  1.376  1.483  1.667
-#> Correction 0.028 0.241  0.402  0.397  0.510
+#> x          3.617 6.666 10.478 14.289 17.339
+#> Naive      0.095 0.514  1.007  0.960  1.621
+#> SIMEX      0.111 0.592  1.199  1.224  2.208
+#> Correction 0.016 0.078  0.192  0.264  0.587
 # }
 ```

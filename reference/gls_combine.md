@@ -43,5 +43,5 @@ cal <- fit_me_calibration(sim$validation)
 W   <- as.matrix(sim$survival[, cal$W_cols])
 out <- gls_combine(W, cal)
 head(out$W_bar)
-#> [1]  7.691021  9.013342  5.898863 14.904778 10.178092  7.391369
+#> [1]  9.435341 11.776481  9.556977 12.020854 11.680636  9.901770
 ```

@@ -61,7 +61,7 @@ elapsed <- Sys.time() - t0
 ``` r
 
 elapsed
-#> Time difference of 3.2952 mins
+#> Time difference of 3.118939 mins
 ```
 
 ## Bootstrap SE versus empirical SE

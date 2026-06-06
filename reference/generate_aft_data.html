@@ -17,7 +17,7 @@ multivariate-normal around the latent truth with covariance Sigma_u."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,8 @@ multivariate-normal around the latent truth with covariance Sigma_u."></head><bo
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">Troubleshooting: warnings and error messages</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -64,6 +66,9 @@ multivariate-normal around the latent truth with covariance <code>Sigma_u</code>
 <span>  n <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  n_val <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  Sigma_u <span class="op">=</span> <span class="fu"><a href="build_sigma_u.html">build_sigma_u</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  x_mean <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  x_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>,</span>
+<span>  f_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  mu <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  sigma_T <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  gamma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">0.3</span>, <span class="op">-</span><span class="fl">0.2</span><span class="op">)</span>,</span>
@@ -86,7 +91,21 @@ multivariate-normal around the latent truth with covariance <code>Sigma_u</code>
 
 <dt id="arg-sigma-u">Sigma_u<a class="anchor" aria-label="anchor" href="#arg-sigma-u"></a></dt>
 <dd><p><code>J x J</code> measurement-error covariance (default 3x3 with
-marginal variances <code>(2.0, 2.5, 3.0)</code> and <code>rho = 0.4</code>).</p></dd>
+marginal variances <code>(2.0, 2.5, 3.0)</code> and <code>rho = 0.4</code>). Use
+<code><a href="sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code> to target a given reliability.</p></dd>
+
+
+<dt id="arg-x-mean-x-sd">x_mean, x_sd<a class="anchor" aria-label="anchor" href="#arg-x-mean-x-sd"></a></dt>
+<dd><p>Mean and standard deviation of the latent exposure
+<code>X_true</code> (shared by the main and validation samples). Defaults <code>10</code> and
+<code>sqrt(5)</code> reproduce the original arbitrary-unit scale; set e.g.
+<code>x_mean = 300</code>, <code>x_sd = 75</code> for a daily-minutes scale.</p></dd>
+
+
+<dt id="arg-f-args">f_args<a class="anchor" aria-label="anchor" href="#arg-f-args"></a></dt>
+<dd><p>Named list of extra arguments forwarded to <code><a href="f_true.html">f_true()</a></code> for the
+dose-response (e.g. <code>list(x_min = 150, alpha = 0.01)</code> on a minutes scale).
+Default <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code> uses the <code><a href="f_true.html">f_true()</a></code> defaults.</p></dd>
 
 
 <dt id="arg-mu">mu<a class="anchor" aria-label="anchor" href="#arg-mu"></a></dt>
@@ -134,12 +153,12 @@ and <code>truth</code> (a list of the parameter values used).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "survival"   "validation" "truth"     </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        T_obs delta    X_true        W1        W2        W3       V1       V2 V3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  156.71416     1  8.599207  8.357699  7.655838  9.125222 32.04701 35.37220  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  110.70489     1 10.410639  9.461024 11.088390 10.384565 38.44437 39.47827  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  333.80655     0  8.131478  6.858229  6.904194  8.057625 37.93294 26.98501  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  443.05466     1 13.567156 12.850575 11.713557 13.364571 28.34546 28.04566  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   73.07738     1 10.736802 10.992466 10.777710 13.245776 18.57382 27.91889  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 1150.60870     1  8.165377  7.734338  7.117875  9.644362 42.48831 28.12171  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  156.71416     1  8.599207  9.042557  9.435666  8.025849 32.04701 35.37220  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  110.70489     1 10.410639  9.409792 10.765985 10.894197 38.44437 39.47827  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  333.80655     0  8.131478  8.497433  9.839325  8.418137 37.93294 26.98501  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  443.05466     1 13.567156 14.752046 15.172707 13.659899 28.34546 28.04566  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   73.07738     1 10.736802  9.950293 10.977064  8.352338 18.57382 27.91889  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 1150.60870     1  8.165377  8.262311  9.389844  6.764756 42.48831 28.12171  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   V4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  1</span>

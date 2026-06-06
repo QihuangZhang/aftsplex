@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,6 +21,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
+    <li><a class="dropdown-item" href="../articles/faq.html">Troubleshooting: warnings and error messages</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -38,6 +40,20 @@
       <small>Source: <a href="https://github.com/QihuangZhang/aftsplex/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="aftsplex-030">aftsplex 0.3.0<a class="anchor" aria-label="anchor" href="#aftsplex-030"></a></h2>
+<p>Realistic-scale data-generating process, two new simulation diagnostics, and a robustness pass on the bootstrap/SIMEX failure modes.</p>
+<ul><li>
+<code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> gains <code>x_mean</code>, <code>x_sd</code>, and <code>f_args</code> so the latent exposure and dose-response can be expressed on a meaningful scale (e.g. daily light-physical-activity minutes, mean ~300 with a 150-minute threshold). The defaults reproduce the previous arbitrary-unit output bit-for-bit.</li>
+<li>New exported <code><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code> returns a measurement-error covariance targeting a given mean per-surrogate reliability, for sweeping measurement quality (e.g. 0.5 / 0.65 / 0.8).</li>
+<li>The <code>simulation-study</code> vignette gains a “daily-minutes scale” section with a reliability sweep (Oracle / Naive / SIMEX ISE across reliability) and a per-surrogate ladder (each surrogate alone vs the GLS combiner via the existing <code>surrogate_pattern</code> argument; no engine change).</li>
+<li>Robustness pass (a user hit an all-NA bootstrap curve with no message, then an opaque error at plotting). <code><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap()</a></code> now isolates each replicate so a degenerate resample drops to NA instead of aborting the run, and emits a single summary warning (replicates dropped, grid points with no finite value, all-NA point estimate, or all replicates failed). The full-sample calibration gives a clear message on collinear/constant surrogates instead of a raw Lapack error, and pointwise summaries are NA-safe.</li>
+<li>
+<code><a href="../reference/simex_aft_spline.html">simex_aft_spline()</a></code> returns NA at grid points with too few converged perturbed fits (one summary warning) instead of erroring with “0 (non-NA) cases”; a failed naive fit now gives an informative error.</li>
+<li>
+<code><a href="../reference/plot_curves.html">plot_curves()</a></code> drops entirely-NA curves with a warning and stops with a clear message when nothing is left to plot, instead of an empty panel.</li>
+<li>New “Troubleshooting” article documenting every warning/error message, and a “coverage diagnostics” article.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="aftsplex-020">aftsplex 0.2.0<a class="anchor" aria-label="anchor" href="#aftsplex-020"></a></h2>
 <p>Revision round addressing reviewer feedback. All additions are backward-compatible via defaults; existing output and the SIMEX regression are unchanged.</p>
