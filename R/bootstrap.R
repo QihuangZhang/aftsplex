@@ -36,7 +36,27 @@
 #' @param x_grid Numeric exposure grid for the curve. If `NULL`, taken as
 #'   100 equally spaced points between the 2nd and 98th percentile of the
 #'   full-sample combined surrogate.
-#' @param verbose Print progress bar?
+#' @param nested Logical; if `TRUE` (default) run the full two-stage
+#'   bootstrap that resamples the validation sample and refits the Phase-1
+#'   calibration on every replicate. If `FALSE`, hold the calibration fixed
+#'   at the full-sample fit and resample only the main study (single-stage),
+#'   giving the conditional-variance interval. Running both and comparing
+#'   `mean(upper - lower)` quantifies the Phase-1 contribution to the width.
+#' @param x_ref Optional scalar reference exposure at which to anchor the
+#'   curves (and every bootstrap replicate) before taking quantiles, so the
+#'   interval is read relative to `x_ref`. `NULL` (default) anchors at
+#'   `x_grid[1]`.
+#' @param support_probs Optional length-2 probabilities defining the
+#'   trustworthy exposure support as quantiles of the full-sample combined
+#'   surrogate. When set, an `in_support` vector is returned and a one-shot
+#'   `warning()` flags out-of-support grid points. `NULL` (default) disables.
+#' @param workers Integer number of parallel workers for the outer bootstrap
+#'   loop. `1L` (default) runs serially with unchanged RNG behaviour. When
+#'   `> 1`, replicates run via `future.apply::future_lapply()` on a
+#'   `multisession` plan with per-task L'Ecuyer streams (`future.seed = TRUE`),
+#'   so results are reproducible and invariant to the worker count. Requires
+#'   the `future` and `future.apply` packages.
+#' @param verbose Print progress bar? (Serial path only.)
 #'
 #' @return A list with elements
 #'   * `x_grid` exposure grid,
@@ -47,6 +67,7 @@
 #'   * `lower_basic, upper_basic` reverse-percentile (basic) CI bounds,
 #'   * `f_bc` bias-corrected point estimate `2*f_hat - bs_mean`,
 #'   * `sigma_w_sq_boot, omega_boot` per-replicate Phase-1 summaries,
+#'   * `in_support` logical support flag (or `NULL`),
 #'   * `R_effective` number of replicates that produced a curve.
 #'
 #' The percentile CI is the primary interval; the basic (reverse-percentile)
@@ -66,6 +87,14 @@
 #'   lambda     = c(0.5, 1, 1.5, 2), B = 5, R = 10
 #' )
 #' head(boot$f_hat)
+#'
+#' # Phase-1 contribution to CI width: compare double vs single-stage.
+#' single <- two_stage_bootstrap(
+#'   survival = sim$survival, validation = sim$validation, x_var = "X_true",
+#'   covariates = c("V1","V2","V3","V4"), v_ref = c(V1=30, V2=30, V3=0, V4=0),
+#'   lambda = c(0.5, 1, 1.5, 2), B = 5, R = 10, nested = FALSE
+#' )
+#' mean(boot$upper - boot$lower) / mean(single$upper - single$lower)
 #' }
 #'
 #' @export
@@ -76,6 +105,8 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
                                 outcome_var = "T_obs", status_var = "delta",
                                 lambda = c(0.5, 1, 1.5, 2), B = 50,
                                 R = 200, x_grid = NULL,
+                                nested = TRUE, x_ref = NULL,
+                                support_probs = NULL, workers = 1L,
                                 dist = "lognormal", verbose = FALSE) {
   W_cols <- extract_surrogate_cols(survival, surrogate_pattern)
   W_mat_full <- as.matrix(survival[, W_cols, drop = FALSE])
@@ -107,16 +138,21 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
   f_hat <- if (!is.null(sim_full)) sim_full$curve_simex else rep(NA_real_, length(x_grid))
 
   curves <- matrix(NA_real_, length(x_grid), R)
-  sigma_w_sq_boot <- numeric(R)
+  sigma_w_sq_boot <- rep(NA_real_, R)
   omega_boot <- matrix(NA_real_, length(W_cols), R)
 
-  pb <- if (verbose) txtProgressBar(min = 0, max = R, style = 3) else NULL
-
-  for (r in seq_len(R)) {
-    v_idx <- sample.int(nrow(validation), replace = TRUE)
-    cal_r <- fit_me_calibration(validation[v_idx, , drop = FALSE],
-                                x_var = x_var,
-                                surrogate_pattern = surrogate_pattern)
+  # One bootstrap replicate. Self-contained (own resamples, own Phase-1 fit
+  # when `nested`), so it is the parallel unit. Calls below keep the same RNG
+  # call order as the original loop, so the serial path is bit-for-bit unchanged.
+  run_rep <- function(r) {
+    if (nested) {
+      v_idx <- sample.int(nrow(validation), replace = TRUE)
+      cal_r <- fit_me_calibration(validation[v_idx, , drop = FALSE],
+                                  x_var = x_var,
+                                  surrogate_pattern = surrogate_pattern)
+    } else {
+      cal_r <- cal_full
+    }
 
     s_idx <- sample.int(nrow(survival), replace = TRUE)
     data_r <- survival[s_idx, , drop = FALSE]
@@ -138,14 +174,46 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
       error = function(e) NULL
     )
 
-    if (!is.null(sim_r)) {
-      curves[, r] <- sim_r$curve_simex
-      sigma_w_sq_boot[r] <- combo_r$sigma_w_sq
-      omega_boot[, r] <- combo_r$omega
+    if (is.null(sim_r)) {
+      list(curve = rep(NA_real_, length(x_grid)),
+           sigma_w_sq = NA_real_, omega = rep(NA_real_, length(W_cols)))
+    } else {
+      list(curve = sim_r$curve_simex,
+           sigma_w_sq = combo_r$sigma_w_sq, omega = combo_r$omega)
     }
-    if (!is.null(pb)) setTxtProgressBar(pb, r)
   }
-  if (!is.null(pb)) { close(pb); message("") }
+
+  if (workers > 1L) {
+    if (!requireNamespace("future", quietly = TRUE) ||
+        !requireNamespace("future.apply", quietly = TRUE)) {
+      stop("workers > 1 requires the 'future' and 'future.apply' packages.")
+    }
+    oplan <- future::plan(future::multisession, workers = workers)
+    on.exit(future::plan(oplan), add = TRUE)
+    res_list <- future.apply::future_lapply(seq_len(R), run_rep,
+                                            future.seed = TRUE)
+  } else {
+    pb <- if (verbose) txtProgressBar(min = 0, max = R, style = 3) else NULL
+    res_list <- vector("list", R)
+    for (r in seq_len(R)) {
+      res_list[[r]] <- run_rep(r)
+      if (!is.null(pb)) setTxtProgressBar(pb, r)
+    }
+    if (!is.null(pb)) { close(pb); message("") }
+  }
+
+  for (r in seq_len(R)) {
+    curves[, r]        <- res_list[[r]]$curve
+    sigma_w_sq_boot[r] <- res_list[[r]]$sigma_w_sq
+    omega_boot[, r]    <- res_list[[r]]$omega
+  }
+
+  if (!is.null(x_ref)) {
+    f_hat  <- recenter_curve(f_hat, x_grid, x_ref)
+    curves <- apply(curves, 2, recenter_curve, x_grid = x_grid, x_ref = x_ref)
+  }
+
+  in_support <- support_flag(x_grid, W_bar_full, support_probs)
 
   q025 <- apply(curves, 1, quantile, probs = 0.025, na.rm = TRUE)
   q975 <- apply(curves, 1, quantile, probs = 0.975, na.rm = TRUE)
@@ -164,6 +232,7 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
     f_bc        = 2 * f_hat - bs_mean,
     sigma_w_sq_boot = sigma_w_sq_boot,
     omega_boot      = omega_boot,
+    in_support      = in_support,
     R_effective     = sum(!is.na(curves[1, ]))
   )
 }

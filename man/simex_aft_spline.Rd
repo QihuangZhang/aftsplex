@@ -18,6 +18,8 @@ simex_aft_spline(
   B = 50,
   dist = "lognormal",
   x_grid = NULL,
+  x_ref = NULL,
+  support_probs = NULL,
   verbose = FALSE,
   maxiter = 200
 )
@@ -49,6 +51,17 @@ appended internally as the naive fit). Default \code{c(0.5, 1, 1.5, 2)}.}
 corrected curve. Defaults to 100 equally spaced points spanning
 \code{data[[x_var]]}.}
 
+\item{x_ref}{Optional scalar reference exposure at which to anchor the
+centred curves (so the dose-response is read as relative to \code{x_ref},
+e.g. a clinically meaningful value). \code{NULL} (default) anchors at the
+lower grid boundary \code{x_grid[1]}, preserving the original behaviour.}
+
+\item{support_probs}{Optional length-2 numeric of probabilities defining
+the trustworthy exposure support as quantiles of \code{data[[x_var]]} (e.g.
+\code{c(0.05, 0.95)}). When set, grid points outside the support are flagged
+in the returned \code{in_support} vector and a one-shot \code{warning()} notes
+that they are spline extrapolations. \code{NULL} (default) disables the check.}
+
 \item{verbose}{Print progress bar and non-convergence count?}
 
 \item{maxiter}{\code{survreg} iteration cap (passed via
@@ -62,6 +75,9 @@ An object of class \code{"simex_aft_spline"}: a list with elements
 \item \code{curve_naive} the centred naive linear predictor (lambda = 0),
 \item \code{curves_lambda} matrix of centred lambda-fits (columns = lambda, including 0),
 \item \code{lambda} the lambda values used (with 0 in column 1),
+\item \code{in_support} logical vector aligned to \code{x_grid} (or \code{NULL} if
+\code{support_probs} was not supplied),
+\item \code{x_ref} the reference anchor used (or \code{NULL}),
 \item \code{call}, \code{n}, \code{df}, \code{dist}, \code{covariates}, \code{B}, \code{sigma_w_sq}, \code{n_fail}
 configuration and diagnostics used by \code{\link[=summary.simex_aft_spline]{summary.simex_aft_spline()}}
 and \code{\link[=plot.simex_aft_spline]{plot.simex_aft_spline()}}.

@@ -28,6 +28,15 @@
 #' @param x_grid Numeric grid of exposure values at which to evaluate the
 #'   corrected curve. Defaults to 100 equally spaced points spanning
 #'   `data[[x_var]]`.
+#' @param x_ref Optional scalar reference exposure at which to anchor the
+#'   centred curves (so the dose-response is read as relative to `x_ref`,
+#'   e.g. a clinically meaningful value). `NULL` (default) anchors at the
+#'   lower grid boundary `x_grid[1]`, preserving the original behaviour.
+#' @param support_probs Optional length-2 numeric of probabilities defining
+#'   the trustworthy exposure support as quantiles of `data[[x_var]]` (e.g.
+#'   `c(0.05, 0.95)`). When set, grid points outside the support are flagged
+#'   in the returned `in_support` vector and a one-shot `warning()` notes
+#'   that they are spline extrapolations. `NULL` (default) disables the check.
 #' @param verbose Print progress bar and non-convergence count?
 #' @param maxiter `survreg` iteration cap (passed via
 #'   [survival::survreg.control()]).
@@ -38,6 +47,9 @@
 #'   * `curve_naive` the centred naive linear predictor (lambda = 0),
 #'   * `curves_lambda` matrix of centred lambda-fits (columns = lambda, including 0),
 #'   * `lambda` the lambda values used (with 0 in column 1),
+#'   * `in_support` logical vector aligned to `x_grid` (or `NULL` if
+#'     `support_probs` was not supplied),
+#'   * `x_ref` the reference anchor used (or `NULL`),
 #'   * `call`, `n`, `df`, `dist`, `covariates`, `B`, `sigma_w_sq`, `n_fail`
 #'     configuration and diagnostics used by [summary.simex_aft_spline()]
 #'     and [plot.simex_aft_spline()].
@@ -66,6 +78,7 @@ simex_aft_spline <- function(
   outcome_var = "T_obs", status_var = "delta",
   lambda = c(0.5, 1, 1.5, 2), B = 50,
   dist = "lognormal", x_grid = NULL,
+  x_ref = NULL, support_probs = NULL,
   verbose = FALSE, maxiter = 200
 ) {
   call <- match.call()
@@ -137,12 +150,25 @@ simex_aft_spline <- function(
     as.numeric(predict(fit_extr, newdata = data.frame(lam = -1)))
   })
 
+  if (!is.null(x_ref)) {
+    curve_simex <- recenter_curve(curve_simex, x_grid, x_ref)
+    curve_naive <- recenter_curve(curve_naive, x_grid, x_ref)
+    cn <- colnames(curves_full)
+    curves_full <- apply(curves_full, 2, recenter_curve,
+                         x_grid = x_grid, x_ref = x_ref)
+    colnames(curves_full) <- cn
+  }
+
+  in_support <- support_flag(x_grid, data[[x_var]], support_probs)
+
   out <- list(
     x_grid       = x_grid,
     curve_simex  = curve_simex,
     curve_naive  = curve_naive,
     curves_lambda = curves_full,
     lambda       = lambda_full,
+    in_support   = in_support,
+    x_ref        = x_ref,
     call         = call,
     n            = nrow(data),
     df           = df,
@@ -253,6 +279,9 @@ print.summary.simex_aft_spline <- function(x, digits = 3, ...) {
 #' @param ci Optional list with elements `lower` and `upper`.
 #' @param show_naive Logical; overlay the naive (`lambda = 0`) curve?
 #'   Default `TRUE`.
+#' @param time_ratio Logical; plot the exponentiated curve (time ratio
+#'   relative to the reference anchor) instead of the centred linear
+#'   predictor? Default `FALSE`. Passed to [plot_curves()].
 #' @param title Plot title.
 #' @param ... Passed through to [plot_curves()].
 #'
@@ -260,11 +289,12 @@ print.summary.simex_aft_spline <- function(x, digits = 3, ...) {
 #'
 #' @export
 plot.simex_aft_spline <- function(x, truth = NULL, ci = NULL,
-                                  show_naive = TRUE,
+                                  show_naive = TRUE, time_ratio = FALSE,
                                   title = "SIMEX-corrected AFT-spline dose-response",
                                   ...) {
   fits <- list(SIMEX = x$curve_simex)
   if (isTRUE(show_naive)) fits$Naive <- x$curve_naive
   plot_curves(x$x_grid, truth = truth, fits = fits, ci = ci,
-              title = title, ...)
+              title = title, time_ratio = time_ratio,
+              in_support = x$in_support, ...)
 }

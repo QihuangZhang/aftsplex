@@ -9,6 +9,7 @@
   truth = NULL,
   ci = NULL,
   show_naive = TRUE,
+  time_ratio = FALSE,
   title = "SIMEX-corrected AFT-spline dose-response",
   ...
 )
@@ -23,6 +24,10 @@ centred truth curve to overlay as a dashed black line.}
 
 \item{show_naive}{Logical; overlay the naive (\code{lambda = 0}) curve?
 Default \code{TRUE}.}
+
+\item{time_ratio}{Logical; plot the exponentiated curve (time ratio
+relative to the reference anchor) instead of the centred linear
+predictor? Default \code{FALSE}. Passed to \code{\link[=plot_curves]{plot_curves()}}.}
 
 \item{title}{Plot title.}
 

@@ -19,6 +19,10 @@ two_stage_bootstrap(
   B = 50,
   R = 200,
   x_grid = NULL,
+  nested = TRUE,
+  x_ref = NULL,
+  support_probs = NULL,
+  workers = 1L,
   dist = "lognormal",
   verbose = FALSE
 )
@@ -56,7 +60,31 @@ default \code{"^W[0-9]+$"}.}
 100 equally spaced points between the 2nd and 98th percentile of the
 full-sample combined surrogate.}
 
-\item{verbose}{Print progress bar?}
+\item{nested}{Logical; if \code{TRUE} (default) run the full two-stage
+bootstrap that resamples the validation sample and refits the Phase-1
+calibration on every replicate. If \code{FALSE}, hold the calibration fixed
+at the full-sample fit and resample only the main study (single-stage),
+giving the conditional-variance interval. Running both and comparing
+\code{mean(upper - lower)} quantifies the Phase-1 contribution to the width.}
+
+\item{x_ref}{Optional scalar reference exposure at which to anchor the
+curves (and every bootstrap replicate) before taking quantiles, so the
+interval is read relative to \code{x_ref}. \code{NULL} (default) anchors at
+\code{x_grid[1]}.}
+
+\item{support_probs}{Optional length-2 probabilities defining the
+trustworthy exposure support as quantiles of the full-sample combined
+surrogate. When set, an \code{in_support} vector is returned and a one-shot
+\code{warning()} flags out-of-support grid points. \code{NULL} (default) disables.}
+
+\item{workers}{Integer number of parallel workers for the outer bootstrap
+loop. \code{1L} (default) runs serially with unchanged RNG behaviour. When
+\verb{> 1}, replicates run via \code{future.apply::future_lapply()} on a
+\code{multisession} plan with per-task L'Ecuyer streams (\code{future.seed = TRUE}),
+so results are reproducible and invariant to the worker count. Requires
+the \code{future} and \code{future.apply} packages.}
+
+\item{verbose}{Print progress bar? (Serial path only.)}
 }
 \value{
 A list with elements
@@ -69,6 +97,7 @@ A list with elements
 \item \verb{lower_basic, upper_basic} reverse-percentile (basic) CI bounds,
 \item \code{f_bc} bias-corrected point estimate \code{2*f_hat - bs_mean},
 \item \verb{sigma_w_sq_boot, omega_boot} per-replicate Phase-1 summaries,
+\item \code{in_support} logical support flag (or \code{NULL}),
 \item \code{R_effective} number of replicates that produced a curve.
 }
 
@@ -107,6 +136,14 @@ boot <- two_stage_bootstrap(
   lambda     = c(0.5, 1, 1.5, 2), B = 5, R = 10
 )
 head(boot$f_hat)
+
+# Phase-1 contribution to CI width: compare double vs single-stage.
+single <- two_stage_bootstrap(
+  survival = sim$survival, validation = sim$validation, x_var = "X_true",
+  covariates = c("V1","V2","V3","V4"), v_ref = c(V1=30, V2=30, V3=0, V4=0),
+  lambda = c(0.5, 1, 1.5, 2), B = 5, R = 10, nested = FALSE
+)
+mean(boot$upper - boot$lower) / mean(single$upper - single$lower)
 }
 
 }

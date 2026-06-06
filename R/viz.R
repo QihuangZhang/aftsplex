@@ -21,6 +21,13 @@
 #'   `NULL` (the default), uses `colors["SIMEX"]` when present (because the
 #'   ribbon is typically a SIMEX bootstrap interval) and otherwise falls
 #'   back to the first entry of `colors`.
+#' @param time_ratio Logical; if `TRUE`, exponentiate the curves, truth, and
+#'   CI ribbon so the y-axis reads as a time ratio relative to the reference
+#'   anchor, and draw a horizontal reference line at `y = 1`. Default `FALSE`.
+#' @param in_support Optional logical vector aligned to `x_grid` (e.g. from a
+#'   [simex_aft_spline()] fit with `support_probs` set). Grid points where it
+#'   is `FALSE` are drawn dashed with a lighter ribbon and a caption note,
+#'   marking spline extrapolation beyond the exposure support.
 #'
 #' @return A `ggplot` object.
 #'
@@ -37,16 +44,67 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
                         x_lab = "Exposure",
                         y_lab = "Centred linear predictor (log time ratio)",
                         colors = method_colors(),
-                        ci_color = NULL) {
+                        ci_color = NULL,
+                        time_ratio = FALSE,
+                        in_support = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("Package 'ggplot2' is required for plot_curves(). ",
          "Install it via install.packages('ggplot2').")
   }
+  if (isTRUE(time_ratio)) {
+    fits <- lapply(fits, exp)
+    if (!is.null(truth)) truth <- exp(truth)
+    if (!is.null(ci)) { ci$lower <- exp(ci$lower); ci$upper <- exp(ci$upper) }
+    if (identical(y_lab, "Centred linear predictor (log time ratio)")) {
+      y_lab <- "Time ratio (vs reference)"
+    }
+  }
+
+  # Segments outside the exposure support are drawn dashed. `bridged` extends
+  # the out-of-support mask by one neighbour on each side so the dashed and
+  # solid portions share a vertex and the line has no visible gap.
+  has_support <- !is.null(in_support) && any(!in_support)
+  bridged <- NULL
+  if (has_support) {
+    n <- length(in_support)
+    out <- !in_support
+    bridged <- out
+    bridged[-n] <- bridged[-n] | out[-1]
+    bridged[-1] <- bridged[-1] | out[-n]
+  }
+
   df_long <- do.call(rbind, lapply(names(fits), function(nm) {
-    data.frame(x = x_grid, y = fits[[nm]], method = nm)
+    d <- data.frame(x = x_grid, y = fits[[nm]], method = nm)
+    if (has_support) { d$in_support <- in_support; d$bridged <- bridged }
+    d
   }))
 
   p <- ggplot2::ggplot()
+
+  if (!is.null(ci)) {
+    if (is.null(ci_color)) {
+      ci_color <- if ("SIMEX" %in% names(colors)) unname(colors["SIMEX"]) else unname(colors[1])
+    }
+    df_ci <- data.frame(x = x_grid, lower = ci$lower, upper = ci$upper)
+    if (has_support) {
+      df_ci$in_support <- in_support
+      df_ci$bridged    <- bridged
+      p <- p + ggplot2::geom_ribbon(
+        data = df_ci[df_ci$in_support, , drop = FALSE],
+        ggplot2::aes(x = .data$x, ymin = .data$lower, ymax = .data$upper),
+        fill = ci_color, alpha = 0.22)
+      p <- p + ggplot2::geom_ribbon(
+        data = df_ci[df_ci$bridged, , drop = FALSE],
+        ggplot2::aes(x = .data$x, ymin = .data$lower, ymax = .data$upper),
+        fill = ci_color, alpha = 0.08)
+    } else {
+      p <- p + ggplot2::geom_ribbon(
+        data = df_ci,
+        ggplot2::aes(x = .data$x, ymin = .data$lower, ymax = .data$upper),
+        fill = ci_color, alpha = 0.22)
+    }
+  }
+
   if (!is.null(truth)) {
     df_truth <- data.frame(x = x_grid, y = truth)
     p <- p + ggplot2::geom_line(
@@ -55,24 +113,38 @@ plot_curves <- function(x_grid, truth, fits, ci = NULL,
       color = "black", linewidth = 1.0, linetype = "dashed"
     )
   }
+
+  if (has_support) {
+    p <- p +
+      ggplot2::geom_line(
+        data = df_long[df_long$in_support, , drop = FALSE],
+        ggplot2::aes(x = .data$x, y = .data$y, color = .data$method),
+        linewidth = 0.9) +
+      ggplot2::geom_line(
+        data = df_long[df_long$bridged, , drop = FALSE],
+        ggplot2::aes(x = .data$x, y = .data$y, color = .data$method,
+                     group = .data$method),
+        linewidth = 0.9, linetype = "dashed")
+  } else {
+    p <- p + ggplot2::geom_line(
+      data = df_long,
+      ggplot2::aes(x = .data$x, y = .data$y, color = .data$method),
+      linewidth = 0.9)
+  }
+
+  if (isTRUE(time_ratio)) {
+    p <- p + ggplot2::geom_hline(yintercept = 1, color = "grey50",
+                                 linewidth = 0.4)
+  }
+
   p <- p +
-    ggplot2::geom_line(data = df_long,
-                       ggplot2::aes(x = .data$x, y = .data$y, color = .data$method),
-                       linewidth = 0.9) +
     ggplot2::scale_color_manual(values = colors) +
     ggplot2::labs(x = x_lab, y = y_lab, title = title, color = "Method") +
     ggplot2::theme_bw(base_size = 12)
 
-  if (!is.null(ci)) {
-    if (is.null(ci_color)) {
-      ci_color <- if ("SIMEX" %in% names(colors)) unname(colors["SIMEX"]) else unname(colors[1])
-    }
-    df_ci <- data.frame(x = x_grid, lower = ci$lower, upper = ci$upper)
-    p <- p + ggplot2::geom_ribbon(
-      data = df_ci,
-      ggplot2::aes(x = .data$x, ymin = .data$lower, ymax = .data$upper),
-      fill = ci_color, alpha = 0.22
-    )
+  if (has_support) {
+    p <- p + ggplot2::labs(
+      caption = "Dashed segments fall outside the exposure support (spline extrapolation, not fit).")
   }
   p
 }

@@ -1,6 +1,6 @@
 Package: aftsplex
 Title: AFT + Spline + SIMEX for Nonlinear Dose-Response with Multivariate Measurement Error
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Qihuang", "Zhang",
            email = "qihuang.zhang@mcgill.ca",
@@ -31,7 +31,9 @@ Suggests:
     ggplot2,
     testthat (>= 3.0.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    future,
+    future.apply
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://qihuangzhang.github.io/aftsplex/, https://github.com/QihuangZhang/aftsplex

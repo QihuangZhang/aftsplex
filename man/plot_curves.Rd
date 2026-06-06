@@ -13,7 +13,9 @@ plot_curves(
   x_lab = "Exposure",
   y_lab = "Centred linear predictor (log time ratio)",
   colors = method_colors(),
-  ci_color = NULL
+  ci_color = NULL,
+  time_ratio = FALSE,
+  in_support = NULL
 )
 }
 \arguments{
@@ -39,6 +41,15 @@ numeric vector of length \code{length(x_grid)}.}
 \code{NULL} (the default), uses \code{colors["SIMEX"]} when present (because the
 ribbon is typically a SIMEX bootstrap interval) and otherwise falls
 back to the first entry of \code{colors}.}
+
+\item{time_ratio}{Logical; if \code{TRUE}, exponentiate the curves, truth, and
+CI ribbon so the y-axis reads as a time ratio relative to the reference
+anchor, and draw a horizontal reference line at \code{y = 1}. Default \code{FALSE}.}
+
+\item{in_support}{Optional logical vector aligned to \code{x_grid} (e.g. from a
+\code{\link[=simex_aft_spline]{simex_aft_spline()}} fit with \code{support_probs} set). Grid points where it
+is \code{FALSE} are drawn dashed with a lighter ribbon and a caption note,
+marking spline extrapolation beyond the exposure support.}
 }
 \value{
 A \code{ggplot} object.
