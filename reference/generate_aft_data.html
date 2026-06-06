@@ -17,7 +17,7 @@ multivariate-normal around the latent truth with covariance Sigma_u."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,7 @@ multivariate-normal around the latent truth with covariance Sigma_u."></head><bo
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/QihuangZhang/aftsplex/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -133,12 +134,12 @@ and <code>truth</code> (a list of the parameter values used).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "survival"   "validation" "truth"     </span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        T_obs delta    X_true        W1        W2        W3       V1       V2 V3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  156.71416     1  8.599207  9.042557  9.435666  8.025849 32.04701 35.37220  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  110.70489     1 10.410639  9.409792 10.765985 10.894197 38.44437 39.47827  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  333.80655     0  8.131478  8.497433  9.839325  8.418137 37.93294 26.98501  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  443.05466     1 13.567156 14.752046 15.172707 13.659899 28.34546 28.04566  1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   73.07738     1 10.736802  9.950293 10.977064  8.352338 18.57382 27.91889  0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 1150.60870     1  8.165377  8.262311  9.389844  6.764756 42.48831 28.12171  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  156.71416     1  8.599207  8.357699  7.655838  9.125222 32.04701 35.37220  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  110.70489     1 10.410639  9.461024 11.088390 10.384565 38.44437 39.47827  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  333.80655     0  8.131478  6.858229  6.904194  8.057625 37.93294 26.98501  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  443.05466     1 13.567156 12.850575 11.713557 13.364571 28.34546 28.04566  1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   73.07738     1 10.736802 10.992466 10.777710 13.245776 18.57382 27.91889  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 1150.60870     1  8.165377  7.734338  7.117875  9.644362 42.48831 28.12171  0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   V4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2  1</span>

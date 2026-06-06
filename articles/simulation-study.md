@@ -73,7 +73,7 @@ elapsed <- Sys.time() - t0
 ``` r
 
 elapsed
-#> Time difference of 15.58071 secs
+#> Time difference of 16.31279 secs
 ```
 
 ## ISE summary
@@ -96,8 +96,8 @@ data.frame(
 )
 #>         Mean   MCSE Median
 #> Oracle 0.065 0.0108  0.043
-#> Naive  0.181 0.0254  0.140
-#> SIMEX  0.084 0.0162  0.057
+#> Naive  0.234 0.0298  0.233
+#> SIMEX  0.127 0.0214  0.110
 ```
 
 The pattern matches the manuscript: Naive carries 2-3x the ISE of Oracle

@@ -11,7 +11,7 @@ the method_colors() palette by default."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,6 +26,7 @@ the method_colors() palette by default."></head><body>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/QihuangZhang/aftsplex/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -59,7 +60,9 @@ the <code><a href="method_colors.html">method_colors()</a></code> palette by def
 <span>  x_lab <span class="op">=</span> <span class="st">"Exposure"</span>,</span>
 <span>  y_lab <span class="op">=</span> <span class="st">"Centred linear predictor (log time ratio)"</span>,</span>
 <span>  colors <span class="op">=</span> <span class="fu"><a href="method_colors.html">method_colors</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  ci_color <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  ci_color <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time_ratio <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  in_support <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,6 +107,19 @@ numeric vector of length <code>length(x_grid)</code>.</p></dd>
 <code>NULL</code> (the default), uses <code>colors["SIMEX"]</code> when present (because the
 ribbon is typically a SIMEX bootstrap interval) and otherwise falls
 back to the first entry of <code>colors</code>.</p></dd>
+
+
+<dt id="arg-time-ratio">time_ratio<a class="anchor" aria-label="anchor" href="#arg-time-ratio"></a></dt>
+<dd><p>Logical; if <code>TRUE</code>, exponentiate the curves, truth, and
+CI ribbon so the y-axis reads as a time ratio relative to the reference
+anchor, and draw a horizontal reference line at <code>y = 1</code>. Default <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-in-support">in_support<a class="anchor" aria-label="anchor" href="#arg-in-support"></a></dt>
+<dd><p>Optional logical vector aligned to <code>x_grid</code> (e.g. from a
+<code><a href="simex_aft_spline.html">simex_aft_spline()</a></code> fit with <code>support_probs</code> set). Grid points where it
+is <code>FALSE</code> are drawn dashed with a lighter ribbon and a caption note,
+marking spline extrapolation beyond the exposure support.</p></dd>
 
 </dl></div>
     <div class="section level2">

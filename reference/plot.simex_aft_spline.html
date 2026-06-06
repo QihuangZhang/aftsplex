@@ -15,7 +15,7 @@ two_stage_bootstrap())."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,6 +30,7 @@ two_stage_bootstrap())."></head><body>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/QihuangZhang/aftsplex/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -62,6 +63,7 @@ line, and <code>ci</code> to add a percentile ribbon (typically from
 <span>  truth <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_naive <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  time_ratio <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  title <span class="op">=</span> <span class="st">"SIMEX-corrected AFT-spline dose-response"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -87,6 +89,12 @@ centred truth curve to overlay as a dashed black line.</p></dd>
 <dt id="arg-show-naive">show_naive<a class="anchor" aria-label="anchor" href="#arg-show-naive"></a></dt>
 <dd><p>Logical; overlay the naive (<code>lambda = 0</code>) curve?
 Default <code>TRUE</code>.</p></dd>
+
+
+<dt id="arg-time-ratio">time_ratio<a class="anchor" aria-label="anchor" href="#arg-time-ratio"></a></dt>
+<dd><p>Logical; plot the exponentiated curve (time ratio
+relative to the reference anchor) instead of the centred linear
+predictor? Default <code>FALSE</code>. Passed to <code><a href="plot_curves.html">plot_curves()</a></code>.</p></dd>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>

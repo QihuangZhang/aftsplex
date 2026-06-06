@@ -19,7 +19,7 @@ pointwise quadratic OLS."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,7 @@ pointwise quadratic OLS."></head><body>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/QihuangZhang/aftsplex/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -76,6 +77,8 @@ pointwise quadratic OLS.</p>
 <span>  B <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"lognormal"</span>,</span>
 <span>  x_grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  x_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  support_probs <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  maxiter <span class="op">=</span> <span class="fl">200</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -131,6 +134,21 @@ corrected curve. Defaults to 100 equally spaced points spanning
 <code>data[[x_var]]</code>.</p></dd>
 
 
+<dt id="arg-x-ref">x_ref<a class="anchor" aria-label="anchor" href="#arg-x-ref"></a></dt>
+<dd><p>Optional scalar reference exposure at which to anchor the
+centred curves (so the dose-response is read as relative to <code>x_ref</code>,
+e.g. a clinically meaningful value). <code>NULL</code> (default) anchors at the
+lower grid boundary <code>x_grid[1]</code>, preserving the original behaviour.</p></dd>
+
+
+<dt id="arg-support-probs">support_probs<a class="anchor" aria-label="anchor" href="#arg-support-probs"></a></dt>
+<dd><p>Optional length-2 numeric of probabilities defining
+the trustworthy exposure support as quantiles of <code>data[[x_var]]</code> (e.g.
+<code>c(0.05, 0.95)</code>). When set, grid points outside the support are flagged
+in the returned <code>in_support</code> vector and a one-shot <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code> notes
+that they are spline extrapolations. <code>NULL</code> (default) disables the check.</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Print progress bar and non-convergence count?</p></dd>
 
@@ -147,6 +165,9 @@ corrected curve. Defaults to 100 equally spaced points spanning
 <li><p><code>curve_naive</code> the centred naive linear predictor (lambda = 0),</p></li>
 <li><p><code>curves_lambda</code> matrix of centred lambda-fits (columns = lambda, including 0),</p></li>
 <li><p><code>lambda</code> the lambda values used (with 0 in column 1),</p></li>
+<li><p><code>in_support</code> logical vector aligned to <code>x_grid</code> (or <code>NULL</code> if
+<code>support_probs</code> was not supplied),</p></li>
+<li><p><code>x_ref</code> the reference anchor used (or <code>NULL</code>),</p></li>
 <li><p><code>call</code>, <code>n</code>, <code>df</code>, <code>dist</code>, <code>covariates</code>, <code>B</code>, <code>sigma_w_sq</code>, <code>n_fail</code>
 configuration and diagnostics used by <code><a href="summary.simex_aft_spline.html">summary.simex_aft_spline()</a></code>
 and <code><a href="plot.simex_aft_spline.html">plot.simex_aft_spline()</a></code>.</p></li>
@@ -185,14 +206,14 @@ average via <code>na.rm = TRUE</code>, and the count is reported if <code>verbos
 <span class="r-out co"><span class="r-pr">#&gt;</span>   n observations:  500                Spline df:    4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Covariates:      V1, V2, V3, V4     Distribution: lognormal</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   Inner B:         10                 sigma_w_sq:   1.2659</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Inner B:         10                 sigma_w_sq:   1.6440</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Centred dose-response (anchored at min(x_grid)):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               5%   25%    50%    75%    95%</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> x          3.617 6.666 10.478 14.289 17.339</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Naive      0.095 0.514  1.007  0.960  1.621</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SIMEX      0.111 0.592  1.199  1.224  2.208</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Correction 0.016 0.078  0.192  0.264  0.587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x          3.705 7.004 11.127 15.250 18.548</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Naive      0.201 0.843  0.974  1.086  1.157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SIMEX      0.228 1.084  1.376  1.483  1.667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Correction 0.028 0.241  0.402  0.397  0.510</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

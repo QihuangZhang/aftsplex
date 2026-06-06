@@ -16,6 +16,7 @@ plot(
   truth = NULL,
   ci = NULL,
   show_naive = TRUE,
+  time_ratio = FALSE,
   title = "SIMEX-corrected AFT-spline dose-response",
   ...
 )
@@ -41,6 +42,13 @@ plot(
 - show_naive:
 
   Logical; overlay the naive (`lambda = 0`) curve? Default `TRUE`.
+
+- time_ratio:
+
+  Logical; plot the exponentiated curve (time ratio relative to the
+  reference anchor) instead of the centred linear predictor? Default
+  `FALSE`. Passed to
+  [`plot_curves()`](https://qihuangzhang.github.io/aftsplex/reference/plot_curves.md).
 
 - title:
 

@@ -18,7 +18,9 @@ plot_curves(
   x_lab = "Exposure",
   y_lab = "Centred linear predictor (log time ratio)",
   colors = method_colors(),
-  ci_color = NULL
+  ci_color = NULL,
+  time_ratio = FALSE,
+  in_support = NULL
 )
 ```
 
@@ -63,6 +65,20 @@ plot_curves(
   default), uses `colors["SIMEX"]` when present (because the ribbon is
   typically a SIMEX bootstrap interval) and otherwise falls back to the
   first entry of `colors`.
+
+- time_ratio:
+
+  Logical; if `TRUE`, exponentiate the curves, truth, and CI ribbon so
+  the y-axis reads as a time ratio relative to the reference anchor, and
+  draw a horizontal reference line at `y = 1`. Default `FALSE`.
+
+- in_support:
+
+  Optional logical vector aligned to `x_grid` (e.g. from a
+  [`simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/simex_aft_spline.md)
+  fit with `support_probs` set). Grid points where it is `FALSE` are
+  drawn dashed with a lighter ribbon and a caption note, marking spline
+  extrapolation beyond the exposure support.
 
 ## Value
 

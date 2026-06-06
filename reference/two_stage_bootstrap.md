@@ -35,6 +35,10 @@ two_stage_bootstrap(
   B = 50,
   R = 200,
   x_grid = NULL,
+  nested = TRUE,
+  x_ref = NULL,
+  support_probs = NULL,
+  workers = 1L,
   dist = "lognormal",
   verbose = FALSE
 )
@@ -93,9 +97,43 @@ two_stage_bootstrap(
   spaced points between the 2nd and 98th percentile of the full-sample
   combined surrogate.
 
+- nested:
+
+  Logical; if `TRUE` (default) run the full two-stage bootstrap that
+  resamples the validation sample and refits the Phase-1 calibration on
+  every replicate. If `FALSE`, hold the calibration fixed at the
+  full-sample fit and resample only the main study (single-stage),
+  giving the conditional-variance interval. Running both and comparing
+  `mean(upper - lower)` quantifies the Phase-1 contribution to the
+  width.
+
+- x_ref:
+
+  Optional scalar reference exposure at which to anchor the curves (and
+  every bootstrap replicate) before taking quantiles, so the interval is
+  read relative to `x_ref`. `NULL` (default) anchors at `x_grid[1]`.
+
+- support_probs:
+
+  Optional length-2 probabilities defining the trustworthy exposure
+  support as quantiles of the full-sample combined surrogate. When set,
+  an `in_support` vector is returned and a one-shot
+  [`warning()`](https://rdrr.io/r/base/warning.html) flags
+  out-of-support grid points. `NULL` (default) disables.
+
+- workers:
+
+  Integer number of parallel workers for the outer bootstrap loop. `1L`
+  (default) runs serially with unchanged RNG behaviour. When `> 1`,
+  replicates run via
+  [`future.apply::future_lapply()`](https://future.apply.futureverse.org/reference/future_lapply.html)
+  on a `multisession` plan with per-task L'Ecuyer streams
+  (`future.seed = TRUE`), so results are reproducible and invariant to
+  the worker count. Requires the `future` and `future.apply` packages.
+
 - verbose:
 
-  Print progress bar?
+  Print progress bar? (Serial path only.)
 
 ## Value
 
@@ -117,6 +155,8 @@ A list with elements
 - `f_bc` bias-corrected point estimate `2*f_hat - bs_mean`,
 
 - `sigma_w_sq_boot, omega_boot` per-replicate Phase-1 summaries,
+
+- `in_support` logical support flag (or `NULL`),
 
 - `R_effective` number of replicates that produced a curve.
 
@@ -147,6 +187,15 @@ boot <- two_stage_bootstrap(
 )
 head(boot$f_hat)
 #>          1          2          3          4          5          6 
-#> 0.00000000 0.01912404 0.03855214 0.05830025 0.07838434 0.09882034 
+#> 0.00000000 0.04065205 0.08077468 0.12033244 0.15928984 0.19761142 
+
+# Phase-1 contribution to CI width: compare double vs single-stage.
+single <- two_stage_bootstrap(
+  survival = sim$survival, validation = sim$validation, x_var = "X_true",
+  covariates = c("V1","V2","V3","V4"), v_ref = c(V1=30, V2=30, V3=0, V4=0),
+  lambda = c(0.5, 1, 1.5, 2), B = 5, R = 10, nested = FALSE
+)
+mean(boot$upper - boot$lower) / mean(single$upper - single$lower)
+#> [1] 1.286997
 # }
 ```

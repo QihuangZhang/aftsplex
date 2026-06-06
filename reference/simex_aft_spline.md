@@ -26,6 +26,8 @@ simex_aft_spline(
   B = 50,
   dist = "lognormal",
   x_grid = NULL,
+  x_ref = NULL,
+  support_probs = NULL,
   verbose = FALSE,
   maxiter = 200
 )
@@ -80,6 +82,22 @@ simex_aft_spline(
   Numeric grid of exposure values at which to evaluate the corrected
   curve. Defaults to 100 equally spaced points spanning `data[[x_var]]`.
 
+- x_ref:
+
+  Optional scalar reference exposure at which to anchor the centred
+  curves (so the dose-response is read as relative to `x_ref`, e.g. a
+  clinically meaningful value). `NULL` (default) anchors at the lower
+  grid boundary `x_grid[1]`, preserving the original behaviour.
+
+- support_probs:
+
+  Optional length-2 numeric of probabilities defining the trustworthy
+  exposure support as quantiles of `data[[x_var]]` (e.g.
+  `c(0.05, 0.95)`). When set, grid points outside the support are
+  flagged in the returned `in_support` vector and a one-shot
+  [`warning()`](https://rdrr.io/r/base/warning.html) notes that they are
+  spline extrapolations. `NULL` (default) disables the check.
+
 - verbose:
 
   Print progress bar and non-convergence count?
@@ -103,6 +121,11 @@ An object of class `"simex_aft_spline"`: a list with elements
   including 0),
 
 - `lambda` the lambda values used (with 0 in column 1),
+
+- `in_support` logical vector aligned to `x_grid` (or `NULL` if
+  `support_probs` was not supplied),
+
+- `x_ref` the reference anchor used (or `NULL`),
 
 - `call`, `n`, `df`, `dist`, `covariates`, `B`, `sigma_w_sq`, `n_fail`
   configuration and diagnostics used by
@@ -144,13 +167,13 @@ summary(s)
 #>   n observations:  500                Spline df:    4
 #>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
 #>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
-#>   Inner B:         10                 sigma_w_sq:   1.2659
+#>   Inner B:         10                 sigma_w_sq:   1.6440
 #> 
 #> Centred dose-response (anchored at min(x_grid)):
 #>               5%   25%    50%    75%    95%
-#> x          3.617 6.666 10.478 14.289 17.339
-#> Naive      0.095 0.514  1.007  0.960  1.621
-#> SIMEX      0.111 0.592  1.199  1.224  2.208
-#> Correction 0.016 0.078  0.192  0.264  0.587
+#> x          3.705 7.004 11.127 15.250 18.548
+#> Naive      0.201 0.843  0.974  1.086  1.157
+#> SIMEX      0.228 1.084  1.376  1.483  1.667
+#> Correction 0.028 0.241  0.402  0.397  0.510
 # }
 ```

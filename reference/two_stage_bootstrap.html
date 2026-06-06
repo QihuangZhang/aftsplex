@@ -25,7 +25,7 @@ corrected curve.
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,7 @@ corrected curve.
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
   </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/QihuangZhang/aftsplex/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -83,6 +84,10 @@ corrected curve.</p></li>
 <span>  B <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  R <span class="op">=</span> <span class="fl">200</span>,</span>
 <span>  x_grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  nested <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  x_ref <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  support_probs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  workers <span class="op">=</span> <span class="fl">1L</span>,</span>
 <span>  dist <span class="op">=</span> <span class="st">"lognormal"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -144,8 +149,40 @@ default <code>"^W[0-9]+$"</code>.</p></dd>
 full-sample combined surrogate.</p></dd>
 
 
+<dt id="arg-nested">nested<a class="anchor" aria-label="anchor" href="#arg-nested"></a></dt>
+<dd><p>Logical; if <code>TRUE</code> (default) run the full two-stage
+bootstrap that resamples the validation sample and refits the Phase-1
+calibration on every replicate. If <code>FALSE</code>, hold the calibration fixed
+at the full-sample fit and resample only the main study (single-stage),
+giving the conditional-variance interval. Running both and comparing
+<code>mean(upper - lower)</code> quantifies the Phase-1 contribution to the width.</p></dd>
+
+
+<dt id="arg-x-ref">x_ref<a class="anchor" aria-label="anchor" href="#arg-x-ref"></a></dt>
+<dd><p>Optional scalar reference exposure at which to anchor the
+curves (and every bootstrap replicate) before taking quantiles, so the
+interval is read relative to <code>x_ref</code>. <code>NULL</code> (default) anchors at
+<code>x_grid[1]</code>.</p></dd>
+
+
+<dt id="arg-support-probs">support_probs<a class="anchor" aria-label="anchor" href="#arg-support-probs"></a></dt>
+<dd><p>Optional length-2 probabilities defining the
+trustworthy exposure support as quantiles of the full-sample combined
+surrogate. When set, an <code>in_support</code> vector is returned and a one-shot
+<code><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning()</a></code> flags out-of-support grid points. <code>NULL</code> (default) disables.</p></dd>
+
+
+<dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
+<dd><p>Integer number of parallel workers for the outer bootstrap
+loop. <code>1L</code> (default) runs serially with unchanged RNG behaviour. When
+<code>&gt; 1</code>, replicates run via <code><a href="https://future.apply.futureverse.org/reference/future_lapply.html" class="external-link">future.apply::future_lapply()</a></code> on a
+<code>multisession</code> plan with per-task L'Ecuyer streams (<code>future.seed = TRUE</code>),
+so results are reproducible and invariant to the worker count. Requires
+the <code>future</code> and <code>future.apply</code> packages.</p></dd>
+
+
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Print progress bar?</p></dd>
+<dd><p>Print progress bar? (Serial path only.)</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -158,6 +195,7 @@ full-sample combined surrogate.</p></dd>
 <li><p><code>lower_basic, upper_basic</code> reverse-percentile (basic) CI bounds,</p></li>
 <li><p><code>f_bc</code> bias-corrected point estimate <code>2*f_hat - bs_mean</code>,</p></li>
 <li><p><code>sigma_w_sq_boot, omega_boot</code> per-replicate Phase-1 summaries,</p></li>
+<li><p><code>in_support</code> logical support flag (or <code>NULL</code>),</p></li>
 <li><p><code>R_effective</code> number of replicates that produced a curve.</p></li>
 </ul><p>The percentile CI is the primary interval; the basic (reverse-percentile)
 CI is kept for completeness but does not improve coverage on simulated
@@ -186,7 +224,16 @@ when the validation sample is small relative to the main study.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">boot</span><span class="op">$</span><span class="va">f_hat</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          1          2          3          4          5          6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.00000000 0.01912404 0.03855214 0.05830025 0.07838434 0.09882034 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.00000000 0.04065205 0.08077468 0.12033244 0.15928984 0.19761142 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Phase-1 contribution to CI width: compare double vs single-stage.</span></span></span>
+<span class="r-in"><span><span class="va">single</span> <span class="op">&lt;-</span> <span class="fu">two_stage_bootstrap</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  survival <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span>, validation <span class="op">=</span> <span class="va">sim</span><span class="op">$</span><span class="va">validation</span>, x_var <span class="op">=</span> <span class="st">"X_true"</span>,</span></span>
+<span class="r-in"><span>  covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"V1"</span>,<span class="st">"V2"</span>,<span class="st">"V3"</span>,<span class="st">"V4"</span><span class="op">)</span>, v_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>V1<span class="op">=</span><span class="fl">30</span>, V2<span class="op">=</span><span class="fl">30</span>, V3<span class="op">=</span><span class="fl">0</span>, V4<span class="op">=</span><span class="fl">0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  lambda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">1.5</span>, <span class="fl">2</span><span class="op">)</span>, B <span class="op">=</span> <span class="fl">5</span>, R <span class="op">=</span> <span class="fl">10</span>, nested <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">boot</span><span class="op">$</span><span class="va">upper</span> <span class="op">-</span> <span class="va">boot</span><span class="op">$</span><span class="va">lower</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">single</span><span class="op">$</span><span class="va">upper</span> <span class="op">-</span> <span class="va">single</span><span class="op">$</span><span class="va">lower</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.286997</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
