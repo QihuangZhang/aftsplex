@@ -22,6 +22,20 @@
 #'
 #' @export
 compute_ise <- function(x_grid, truth_fn, fits) {
+  if (length(x_grid) < 2L) {
+    stop("'x_grid' must have at least 2 points to integrate.", call. = FALSE)
+  }
+  if (is.unsorted(x_grid)) {
+    stop("'x_grid' must be sorted in increasing order; otherwise the ",
+         "trapezoidal integral is undefined (and can come out negative).",
+         call. = FALSE)
+  }
+  bad <- vapply(fits, function(f) length(f) != length(x_grid), logical(1))
+  if (any(bad)) {
+    stop("Each element of 'fits' must have length(x_grid) = ", length(x_grid),
+         "; offending element(s): ",
+         paste(names(fits)[bad], collapse = ", "), ".", call. = FALSE)
+  }
   truth <- truth_fn(x_grid) - truth_fn(x_grid[1])
   ise <- sapply(fits, function(f) {
     delta_x <- diff(x_grid)

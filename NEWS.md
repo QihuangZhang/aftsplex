@@ -1,3 +1,27 @@
+# aftsplex 0.3.1
+
+Robustness fixes surfaced by an adversarial stress-test of 0.3.0. All changes are
+input guards and a bug fix; valid-input behaviour and the byte-identical
+`generate_aft_data()` baseline are unchanged.
+
+* `two_stage_bootstrap()` no longer crashes on the serial path (`workers = 1`,
+  the default) when bootstrap replicates fail. A failed replicate returned `NULL`
+  and `list[[r]] <- NULL` deleted the element, shrinking the result list and
+  triggering "missing value where TRUE/FALSE needed"; the documented
+  drop-and-warn behaviour now works on both the serial and parallel paths.
+* `fit_me_calibration()`, `gls_combine()`, `compute_ise()`,
+  `sigma_u_for_reliability()`, `build_sigma_u()`, and `generate_aft_data()` now
+  validate their inputs and raise informative errors instead of silently
+  propagating `NaN`/`Inf` or returning a meaningless result: constant/too-small
+  validation samples, non-finite or uninformative (zero-slope) surrogates,
+  singular surrogate covariances, unsorted or length-mismatched `compute_ise()`
+  arguments, non-positive `var_x`/`ratios`/`sigma_u_sq`, out-of-range `rho`, and
+  negative `x_sd`.
+* Clarified that the serial (`workers = 1`) bootstrap is the canonical
+  bit-for-bit reproducible path; parallel runs use independent L'Ecuyer streams
+  that are reproducible across worker counts but differ from the serial result
+  for the same seed by design.
+
 # aftsplex 0.3.0
 
 Realistic-scale data-generating process, two new simulation diagnostics, and a

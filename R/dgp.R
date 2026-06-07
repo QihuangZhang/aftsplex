@@ -37,9 +37,21 @@ f_true <- function(x, beta = 0.6, alpha = 0.4, x_min = 6) {
 #'
 #' @export
 build_sigma_u <- function(sigma_u_sq = c(2.0, 2.5, 3.0), rho = 0.4) {
+  if (length(sigma_u_sq) < 1L || !all(is.finite(sigma_u_sq)) ||
+        any(sigma_u_sq <= 0)) {
+    stop("'sigma_u_sq' must be a vector of finite positive variances.",
+         call. = FALSE)
+  }
+  if (!is.finite(rho) || rho < -1 || rho > 1) {
+    stop("'rho' must be a correlation in [-1, 1].", call. = FALSE)
+  }
   sds <- sqrt(sigma_u_sq)
   R <- matrix(rho, length(sds), length(sds))
   diag(R) <- 1
+  if (any(eigen(R, symmetric = TRUE, only.values = TRUE)$values <= 0)) {
+    stop("The implied correlation matrix is not positive definite for rho = ",
+         rho, " with ", length(sds), " surrogates.", call. = FALSE)
+  }
   outer(sds, sds) * R
 }
 
@@ -75,6 +87,14 @@ sigma_u_for_reliability <- function(reliability, var_x,
                                     ratios = c(2.0, 2.5, 3.0), rho = 0.4) {
   if (reliability <= 0 || reliability >= 1) {
     stop("'reliability' must be in (0, 1).", call. = FALSE)
+  }
+  if (length(var_x) != 1L || !is.finite(var_x) || var_x <= 0) {
+    stop("'var_x' must be a single finite positive exposure variance.",
+         call. = FALSE)
+  }
+  if (length(ratios) < 1L || !all(is.finite(ratios)) || any(ratios <= 0)) {
+    stop("'ratios' must be a vector of finite positive relative variances.",
+         call. = FALSE)
   }
   mean_rel <- function(scale) mean(var_x / (var_x + scale * ratios))
   # mean_rel is 1 at scale -> 0 and 0 at scale -> Inf, so a root exists.
@@ -145,6 +165,10 @@ generate_aft_data <- function(
   seed       = NULL
 ) {
   if (!is.null(seed)) set.seed(seed)
+  if (length(x_sd) != 1L || !is.finite(x_sd) || x_sd < 0) {
+    stop("'x_sd' must be a single finite non-negative standard deviation.",
+         call. = FALSE)
+  }
   J <- nrow(Sigma_u)
   f_eval <- function(x) do.call(f_true, c(list(x), f_args))
 

@@ -23,3 +23,27 @@ test_that("gls_combine produces W_bar of correct length and positive sigma_w_sq"
   expect_gt(out$sigma_w_sq, 0)
   expect_equal(sum(out$omega), 1, tolerance = 1e-8)
 })
+
+test_that("fit_me_calibration guards degenerate validation inputs", {
+  sim <- generate_aft_data(n = 50, n_val = 30, seed = 1)
+  val_const <- sim$validation; val_const$X_true <- 5
+  expect_error(fit_me_calibration(val_const), "constant or non-finite")
+  expect_error(fit_me_calibration(sim$validation[1:2, ]), "at least 3")
+  expect_error(fit_me_calibration(sim$validation, x_var = "nope"), "not found")
+})
+
+test_that("gls_combine errors informatively on degenerate calibration", {
+  sim <- generate_aft_data(n = 80, n_val = 500, seed = 1)
+  cal <- fit_me_calibration(sim$validation)
+  W <- as.matrix(sim$survival[, cal$W_cols])
+
+  W_bad <- W; W_bad[1, 1] <- NaN
+  expect_error(gls_combine(W_bad, cal), "non-finite")
+
+  cal0 <- cal; cal0$alpha1[2] <- 0
+  expect_error(gls_combine(W, cal0), "no information")
+
+  # collinear surrogates -> singular back-transformed covariance
+  cal_sing <- cal; cal_sing$Sigma_e <- matrix(1, 3, 3)
+  expect_error(gls_combine(W, cal_sing), "singular")
+})

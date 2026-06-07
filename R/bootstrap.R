@@ -51,11 +51,15 @@
 #'   surrogate. When set, an `in_support` vector is returned and a one-shot
 #'   `warning()` flags out-of-support grid points. `NULL` (default) disables.
 #' @param workers Integer number of parallel workers for the outer bootstrap
-#'   loop. `1L` (default) runs serially with unchanged RNG behaviour. When
-#'   `> 1`, replicates run via `future.apply::future_lapply()` on a
-#'   `multisession` plan with per-task L'Ecuyer streams (`future.seed = TRUE`),
-#'   so results are reproducible and invariant to the worker count. Requires
-#'   the `future` and `future.apply` packages.
+#'   loop. `1L` (default) runs serially and is the canonical reproducible path:
+#'   it draws from R's global RNG stream, so a given `set.seed()` gives
+#'   bit-for-bit identical results. When `> 1`, replicates run via
+#'   `future.apply::future_lapply()` on a `multisession` plan with per-task
+#'   L'Ecuyer streams (`future.seed = TRUE`); these are reproducible and
+#'   identical *across worker counts* (e.g. `workers = 2` matches `workers = 3`),
+#'   but use independent streams and therefore **differ from the serial
+#'   (`workers = 1`) result for the same seed** by design. Requires the `future`
+#'   and `future.apply` packages.
 #' @param verbose Print progress bar? (Serial path only.)
 #'
 #' @return A list with elements
@@ -108,6 +112,14 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
                                 nested = TRUE, x_ref = NULL,
                                 support_probs = NULL, workers = 1L,
                                 dist = "lognormal", verbose = FALSE) {
+  if (length(workers) != 1L || !is.finite(workers) || workers < 1L) {
+    stop("'workers' must be a positive integer (1 = serial).", call. = FALSE)
+  }
+  if (!is.null(v_ref) && length(v_ref) != length(covariates)) {
+    stop("'v_ref' has length ", length(v_ref), " but 'covariates' has length ",
+         length(covariates), "; they must match.", call. = FALSE)
+  }
+
   W_cols <- extract_surrogate_cols(survival, surrogate_pattern)
   W_mat_full <- as.matrix(survival[, W_cols, drop = FALSE])
 
@@ -205,7 +217,11 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
     pb <- if (verbose) txtProgressBar(min = 0, max = R, style = 3) else NULL
     res_list <- vector("list", R)
     for (r in seq_len(R)) {
-      res_list[[r]] <- run_rep(r)
+      # Single-bracket assignment: a failed replicate returns NULL, and
+      # `res_list[[r]] <- NULL` would *delete* the element (shrinking the list
+      # below R and breaking the `ran`/`R_effective` bookkeeping below). Wrapping
+      # in list() stores an explicit NULL so the length stays R.
+      res_list[r] <- list(run_rep(r))
       if (!is.null(pb)) setTxtProgressBar(pb, r)
     }
     if (!is.null(pb)) { close(pb); message("") }

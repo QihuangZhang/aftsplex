@@ -33,6 +33,26 @@ test_that("a fully failing bootstrap warns and returns NA instead of crashing", 
   expect_true(all(is.na(out$f_hat)))
 })
 
+test_that("serial bootstrap warns (not crashes) when every replicate errors to NULL", {
+  # Regression for the serial-path NULL-deletion blocker: when run_rep() returns
+  # NULL for a replicate, `res_list[[r]] <- NULL` used to delete the element and
+  # shrink the list below R, crashing with "missing value where TRUE/FALSE
+  # needed". Here covariates with v_ref = NULL makes every replicate's predict
+  # error -> NULL, exercising that path on the default serial path.
+  sim <- generate_aft_data(n = 150, n_val = 70, seed = 3)
+  w <- capture_warnings(
+    out <- two_stage_bootstrap(
+      survival = sim$survival, validation = sim$validation, x_var = "X_true",
+      covariates = "V1", v_ref = NULL,
+      lambda = c(0.5, 1, 2), B = 3, R = 6, x_grid = seq(8, 12, length.out = 10),
+      workers = 1L
+    )
+  )
+  expect_match(w, "replicates failed", all = FALSE)
+  expect_equal(out$R_effective, 0L)
+  expect_true(all(is.na(out$lower)))
+})
+
 test_that("simex returns graceful NA (not a '0 non-NA cases' error) when fits fail", {
   sim <- generate_aft_data(n = 120, n_val = 60, seed = 2)
   d <- sim$survival; d$delta <- 0L

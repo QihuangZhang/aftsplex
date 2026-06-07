@@ -13,6 +13,24 @@ test_that("build_sigma_u returns a valid covariance matrix", {
   expect_true(all(ev > 0))
 })
 
+test_that("build_sigma_u rejects bad variances and non-PD / out-of-range rho", {
+  expect_error(build_sigma_u(c(2, 0, 3)), "positive")
+  expect_error(build_sigma_u(c(2, 2.5, 3), rho = 1.2), "\\[-1, 1\\]")
+  expect_error(build_sigma_u(c(2, 2.5, 3), rho = 1), "positive definite")
+})
+
+test_that("sigma_u_for_reliability validates var_x, ratios, rho", {
+  expect_error(sigma_u_for_reliability(0.65, var_x = -5), "positive")
+  expect_error(sigma_u_for_reliability(0.65, var_x = 5, ratios = c(2, 0, 3)),
+               "positive")
+  expect_error(sigma_u_for_reliability(0.65, var_x = 5, rho = 2), "\\[-1, 1\\]")
+})
+
+test_that("generate_aft_data rejects a negative x_sd", {
+  expect_error(generate_aft_data(n = 50, n_val = 30, x_sd = -1, seed = 1),
+               "non-negative")
+})
+
 test_that("generate_aft_data returns expected structure and reproduces with seed", {
   sim1 <- generate_aft_data(n = 200, n_val = 100, seed = 42)
   sim2 <- generate_aft_data(n = 200, n_val = 100, seed = 42)

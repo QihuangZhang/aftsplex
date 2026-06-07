@@ -28,6 +28,18 @@ fit_me_calibration <- function(validation, x_var = "X_true",
   W_cols <- extract_surrogate_cols(validation, surrogate_pattern)
   J <- length(W_cols)
   X <- validation[[x_var]]
+  if (is.null(X)) {
+    stop("Truth column '", x_var, "' not found in 'validation'.", call. = FALSE)
+  }
+  if (nrow(validation) < 3L) {
+    stop("'validation' has ", nrow(validation), " row(s); at least 3 are needed ",
+         "to identify the calibration slopes and a residual variance.",
+         call. = FALSE)
+  }
+  if (!all(is.finite(X)) || stats::var(X) < .Machine$double.eps) {
+    stop("The validation truth column '", x_var, "' is constant or non-finite; ",
+         "the calibration slopes are unidentified.", call. = FALSE)
+  }
   alpha0 <- numeric(J)
   alpha1 <- numeric(J)
   resid_mat <- matrix(NA_real_, nrow(validation), J)
@@ -73,15 +85,37 @@ gls_combine <- function(W, calibration) {
   Sigma_e <- calibration$Sigma_e
   J <- length(alpha1)
 
+  if (!all(is.finite(W))) {
+    stop("'W' contains non-finite values (NA/NaN/Inf); cannot GLS-combine the ",
+         "surrogates.", call. = FALSE)
+  }
+  if (any(abs(alpha1) < 1e-8) || !all(is.finite(alpha1))) {
+    stop("A calibration slope ('alpha1') is ~0 or non-finite, so the surrogate ",
+         "carries no information about the exposure and cannot be ",
+         "back-transformed. Drop the uninformative surrogate.", call. = FALSE)
+  }
+
   W_tilde <- sweep(sweep(W, 2, alpha0, "-"), 2, alpha1, "/")
   D_inv <- diag(1 / alpha1, nrow = J)
   Sigma_tilde <- D_inv %*% Sigma_e %*% D_inv
-  Sigma_tilde_inv <- solve(Sigma_tilde)
+  Sigma_tilde_inv <- tryCatch(
+    solve(Sigma_tilde),
+    error = function(e) {
+      stop("The back-transformed surrogate covariance is singular; this is ",
+           "usually collinear or constant surrogate columns. Drop a redundant ",
+           "surrogate.", call. = FALSE)
+    }
+  )
   ones <- rep(1, J)
   denom <- as.numeric(t(ones) %*% Sigma_tilde_inv %*% ones)
   omega <- as.vector(Sigma_tilde_inv %*% ones) / denom
   W_bar <- as.vector(W_tilde %*% omega)
   sigma_w_sq <- 1 / denom
+
+  if (!is.finite(sigma_w_sq) || sigma_w_sq < 0) {
+    stop("The combined conditional variance 'sigma_w_sq' is non-finite or ",
+         "negative; the calibration is degenerate.", call. = FALSE)
+  }
 
   list(W_bar = W_bar, sigma_w_sq = sigma_w_sq, omega = omega,
        Sigma_tilde = Sigma_tilde)

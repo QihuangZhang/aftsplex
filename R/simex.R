@@ -82,6 +82,12 @@ simex_aft_spline <- function(
   verbose = FALSE, maxiter = 200
 ) {
   call <- match.call()
+  if (is.null(data[[x_var]])) {
+    stop("Exposure column '", x_var, "' not found in 'data'.", call. = FALSE)
+  }
+  if (!is.null(x_grid) && length(x_grid) < 2L) {
+    stop("'x_grid' must have at least 2 points.", call. = FALSE)
+  }
   if (is.null(x_grid)) {
     x_grid <- seq(min(data[[x_var]]), max(data[[x_var]]), length.out = 100)
   }

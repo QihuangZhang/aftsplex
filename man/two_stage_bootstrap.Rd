@@ -78,11 +78,15 @@ surrogate. When set, an \code{in_support} vector is returned and a one-shot
 \code{warning()} flags out-of-support grid points. \code{NULL} (default) disables.}
 
 \item{workers}{Integer number of parallel workers for the outer bootstrap
-loop. \code{1L} (default) runs serially with unchanged RNG behaviour. When
-\verb{> 1}, replicates run via \code{future.apply::future_lapply()} on a
-\code{multisession} plan with per-task L'Ecuyer streams (\code{future.seed = TRUE}),
-so results are reproducible and invariant to the worker count. Requires
-the \code{future} and \code{future.apply} packages.}
+loop. \code{1L} (default) runs serially and is the canonical reproducible path:
+it draws from R's global RNG stream, so a given \code{set.seed()} gives
+bit-for-bit identical results. When \verb{> 1}, replicates run via
+\code{future.apply::future_lapply()} on a \code{multisession} plan with per-task
+L'Ecuyer streams (\code{future.seed = TRUE}); these are reproducible and
+identical \emph{across worker counts} (e.g. \code{workers = 2} matches \code{workers = 3}),
+but use independent streams and therefore \strong{differ from the serial
+(\code{workers = 1}) result for the same seed} by design. Requires the \code{future}
+and \code{future.apply} packages.}
 
 \item{verbose}{Print progress bar? (Serial path only.)}
 }
