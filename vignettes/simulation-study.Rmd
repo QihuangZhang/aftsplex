@@ -126,7 +126,7 @@ ISE comparison, and `var_x = x_sd^2` is the exposure variance fed to
 
 ```{r minutes-setup}
 SC <- list(x_mean = log(300), x_sd = 0.45,
-           f_args = list(x_min = log(150), alpha = 1.5, beta = 0.6))
+           f_args = list(x_min = log(150), alpha = 3.0, beta = 0.6))
 
 f_min     <- function(x) do.call(f_true, c(list(x), SC$f_args))
 x_grid_m  <- seq(qnorm(0.05, SC$x_mean, SC$x_sd),
