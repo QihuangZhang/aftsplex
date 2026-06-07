@@ -7,6 +7,8 @@
 
 ### Practical workflows
 
+- [Applied example: daily LPA on the minute / time-ratio
+  scale](https://qihuangzhang.github.io/aftsplex/articles/applied-lpa.md):
 - [Simulation study: Oracle vs Naive vs
   SIMEX](https://qihuangzhang.github.io/aftsplex/articles/simulation-study.md):
 - [Sensitivity analysis: spline degrees of

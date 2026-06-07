@@ -36,6 +36,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
+    <li><a class="dropdown-item" href="../articles/applied-lpa.html">Applied example: daily LPA on the minute / time-ratio scale</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
     <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
@@ -266,6 +267,28 @@ which grid points are within the trustworthy range.</li>
 <p>See the <a href="quickstart.html">Quick start</a> article for
 runnable examples of <code>support_probs</code>, <code>x_ref</code>, and
 the other 0.2.0 options.</p>
+</div>
+<div class="section level2">
+<h2 id="parallel-execution-and-reproducibility">Parallel execution and reproducibility<a class="anchor" aria-label="anchor" href="#parallel-execution-and-reproducibility"></a>
+</h2>
+<p>The outer bootstrap loop is the dominant cost, and it parallelises
+over the <code>workers</code> argument (via
+<code>future.apply</code>):</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap</a></span><span class="op">(</span><span class="va">survival</span>, <span class="va">validation</span>, x_var <span class="op">=</span> <span class="st">"X_true"</span>,</span>
+<span>                    covariates <span class="op">=</span> <span class="va">covs</span>, v_ref <span class="op">=</span> <span class="va">v_ref</span>,</span>
+<span>                    x_grid <span class="op">=</span> <span class="va">x_grid</span>, R <span class="op">=</span> <span class="fl">200</span>, workers <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<p>One reproducibility caveat. The serial path
+(<code>workers = 1</code>, the default) is the
+<strong>canonical</strong> path: it draws from R’s global RNG, so a
+given <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> gives bit-for-bit identical results. The
+parallel path (<code>workers &gt; 1</code>) uses independent L’Ecuyer
+streams, which are reproducible <strong>across worker counts</strong>
+(<code>workers = 2</code> matches <code>workers = 3</code>) but
+<strong>differ from the serial result</strong> for the same seed — by
+design. Use serial when you need byte-identical reproducibility against
+a stored baseline; use parallel for speed, fixing <code>workers</code>
+for a reproducible parallel run.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

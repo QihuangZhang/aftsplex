@@ -36,6 +36,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
+    <li><a class="dropdown-item" href="../articles/applied-lpa.html">Applied example: daily LPA on the minute / time-ratio scale</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
     <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
@@ -102,13 +103,23 @@ survival data frame, a small validation data frame, and the truth used
 to generate them. The main study has a latent exposure
 <code>X_true</code> that is <em>not</em> observed in practice; only the
 three noisy surrogates <code>W1, W2, W3</code> are.</p>
+<p>We put the exposure on the manuscript’s <strong>daily-LPA log
+scale</strong>: <code>X_true</code> is <code>log(LPA minutes)</code>
+with mean <code>log(300)</code> (about 300 min/day) and
+<code>sd = 0.45</code> (95% roughly in [124, 725] min), and the
+dose-response threshold sits at <code>log(150)</code>. See
+<code><a href="../articles/applied-lpa.html">vignette("applied-lpa")</a></code> for displaying the fit back on the
+minute / time-ratio scale.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, n_val <span class="op">=</span> <span class="fl">300</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">XM</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">300</span><span class="op">)</span>; <span class="va">XS</span> <span class="op">&lt;-</span> <span class="fl">0.45</span>            <span class="co"># ~300 min/day on the log analysis scale</span></span>
+<span><span class="va">FA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">150</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">1.5</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, n_val <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>                         x_mean <span class="op">=</span> <span class="va">XM</span>, x_sd <span class="op">=</span> <span class="va">XS</span>, f_args <span class="op">=</span> <span class="va">FA</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      T_obs delta    X_true        W1        W2       W3       V1       V2 V3 V4</span></span>
-<span><span class="co">#&gt; 1 826.9194     0 11.164073 12.458170 10.888199 9.588079 38.85282 30.99448  1  1</span></span>
-<span><span class="co">#&gt; 2 415.8046     1  7.585738  6.493913  8.156123 6.040509 34.50189 30.82174  1  1</span></span>
-<span><span class="co">#&gt; 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1</span></span></code></pre></div>
+<span><span class="co">#&gt;      T_obs delta   X_true       W1       W2       W3       V1       V2 V3 V4</span></span>
+<span><span class="co">#&gt; 1 826.9194     0 5.938048 7.232145 5.662174 4.362054 38.85282 30.99448  1  1</span></span>
+<span><span class="co">#&gt; 2 368.2425     1 5.217922 4.126097 5.788306 3.672692 34.50189 30.82174  1  1</span></span>
+<span><span class="co">#&gt; 3 879.5703     0 5.766440 3.989051 4.896449 5.322374 36.65207 30.40219  1  1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="phase-1-parameter-estimation-and-surrogates-aggregation">Phase-1: Parameter estimation and surrogates aggregation<a class="anchor" aria-label="anchor" href="#phase-1-parameter-estimation-and-surrogates-aggregation"></a>
@@ -124,7 +135,7 @@ correct.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_me_calibration.html">fit_me_calibration</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span><span class="op">)</span></span>
 <span><span class="va">cal</span><span class="op">$</span><span class="va">alpha1</span>                <span class="co"># close to 1: surrogates are essentially unbiased</span></span>
-<span><span class="co">#&gt; [1] 0.9760726 1.0247585 1.0458784</span></span>
+<span><span class="co">#&gt; [1] 0.8811036 1.1230261 1.2279714</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cal</span><span class="op">$</span><span class="va">Sigma_e</span>, <span class="fl">2</span><span class="op">)</span>     <span class="co"># error covariance across the three surrogates</span></span>
 <span><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
 <span><span class="co">#&gt; [1,] 1.94 1.00 1.01</span></span>
@@ -144,7 +155,7 @@ variance that SIMEX needs in the next step.</p>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span></span>
 <span><span class="va">dat</span><span class="op">$</span><span class="va">W_bar</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">W_bar</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>, <span class="fl">3</span><span class="op">)</span>    <span class="co"># residual ME variance fed to SIMEX</span></span>
-<span><span class="co">#&gt; [1] 1.42</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 1.255</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="phase-2-simex-point-estimate">Phase-2: SIMEX point estimate<a class="anchor" aria-label="anchor" href="#phase-2-simex-point-estimate"></a>
@@ -204,21 +215,22 @@ residual ME attenuation that the correction is undoing.</p>
 <span><span class="co">#&gt;   n observations:  1000               Spline df:    4</span></span>
 <span><span class="co">#&gt;   Covariates:      V1, V2, V3, V4     Distribution: lognormal</span></span>
 <span><span class="co">#&gt;   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0</span></span>
-<span><span class="co">#&gt;   Inner B:         100                sigma_w_sq:   1.4200</span></span>
+<span><span class="co">#&gt;   Inner B:         100                sigma_w_sq:   1.2551</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Centred dose-response (anchored at min(x_grid)):</span></span>
-<span><span class="co">#&gt;               5%   25%    50%    75%    95%</span></span>
-<span><span class="co">#&gt; x          5.583 7.619 10.164 12.710 14.746</span></span>
-<span><span class="co">#&gt; Naive      0.029 0.130  0.201  0.231  0.329</span></span>
-<span><span class="co">#&gt; SIMEX      0.043 0.197  0.304  0.293  0.450</span></span>
-<span><span class="co">#&gt; Correction 0.013 0.067  0.104  0.063  0.120</span></span></code></pre></div>
+<span><span class="co">#&gt;                5%    25%   50%    75%    95%</span></span>
+<span><span class="co">#&gt; x           3.382  4.364 5.592  6.820  7.802</span></span>
+<span><span class="co">#&gt; Naive      -0.012 -0.019 0.076  0.051  0.057</span></span>
+<span><span class="co">#&gt; SIMEX      -0.040 -0.091 0.131  0.029  0.036</span></span>
+<span><span class="co">#&gt; Correction -0.028 -0.071 0.054 -0.021 -0.021</span></span></code></pre></div>
 <p>A bare <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on the SIMEX object draws the corrected
 curve with the naive curve overlaid (the smoothing-bias reference).
 Because we are on simulated data we can also pass <code>truth</code> to
 overlay the data-generating curve as a dashed line; on real data simply
 omit it.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/f_true.html">f_true</a></span><span class="op">(</span><span class="va">x_grid</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="../reference/f_true.html">f_true</a></span><span class="op">(</span><span class="va">x_grid</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">f_d</span>   <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">f_true</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="va">FA</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">truth</span> <span class="op">&lt;-</span> <span class="fu">f_d</span><span class="op">(</span><span class="va">x_grid</span><span class="op">)</span> <span class="op">-</span> <span class="fu">f_d</span><span class="op">(</span><span class="va">x_grid</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">s</span>, truth <span class="op">=</span> <span class="va">truth</span>,</span>
 <span>     title <span class="op">=</span> <span class="st">"SIMEX-corrected dose-response (point estimate, B = 100)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quickstart_files/figure-html/plot_simex-1.png" class="r-plt" alt="" width="576"></p>
@@ -280,6 +292,18 @@ runs on the full sample, differing only by RNG state); we plot
 <span>     ci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="va">boot</span><span class="op">$</span><span class="va">lower</span>, upper <span class="op">=</span> <span class="va">boot</span><span class="op">$</span><span class="va">upper</span><span class="op">)</span>,</span>
 <span>     title <span class="op">=</span> <span class="st">"SIMEX-corrected dose-response with two-stage bootstrap CI"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="quickstart_files/figure-html/plot-1.png" class="r-plt" alt="" width="576"></p>
+</div>
+<div class="section level2">
+<h2 id="where-to-next">Where to next<a class="anchor" aria-label="anchor" href="#where-to-next"></a>
+</h2>
+<p>This vignette reports the fit on the internal log scale (the AFT
+analysis axis). For the applied presentation – the
+<strong>time-acceleration ratio</strong> against LPA in
+<strong>minutes</strong>, anchored at a clinical reference of 200
+min/day, with the lower-support caveat – see
+<code><a href="../articles/applied-lpa.html">vignette("applied-lpa")</a></code>. For parallel execution of the
+bootstrap, see <code>two_stage_bootstrap(..., workers = 4)</code> and
+the note in <code><a href="../articles/faq.html">vignette("faq")</a></code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

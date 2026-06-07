@@ -73,7 +73,7 @@ elapsed <- Sys.time() - t0
 ``` r
 
 elapsed
-#> Time difference of 14.63745 secs
+#> Time difference of 15.81021 secs
 ```
 
 ### ISE summary
@@ -118,16 +118,22 @@ plot_curves(x_grid, truth, fits,
 ## A daily-minutes scale (mean ~300 min)
 
 The arbitrary-unit scale above keeps the code minimal, but the
-manuscript expresses the exposure as **daily light-physical-activity
-minutes**. The DGP arguments `x_mean`, `x_sd`, and `f_args` re-express
-the same model on that scale – mean ~300 min, a lower threshold of 150
-min below which the dose-response is flat – without touching the package
-defaults.
+manuscript expresses exposure as **daily light-physical-activity (LPA)
+minutes** on the **log scale** – the analysis scale of the AFT model,
+`log T = b0 + f(log W) + ...`. The DGP arguments `x_mean`, `x_sd`, and
+`f_args` re-express the same model on that scale: `x_mean = log(300)`
+(about 300 min/day), `x_sd = 0.45` (95% roughly in \[124, 725\] min),
+and a dose-response threshold at `log(150)`, below which the curve is
+flat. Display figures exponentiate the axis back to minutes (see the
+[`vignette("applied-lpa")`](https://qihuangzhang.github.io/aftsplex/articles/applied-lpa.md)
+article); here we keep the internal log scale for the ISE comparison,
+and `var_x = x_sd^2` is the exposure variance fed to
+[`sigma_u_for_reliability()`](https://qihuangzhang.github.io/aftsplex/reference/sigma_u_for_reliability.md).
 
 ``` r
 
-SC <- list(x_mean = 300, x_sd = 75,
-           f_args = list(x_min = 150, alpha = 0.01, beta = 0.6))
+SC <- list(x_mean = log(300), x_sd = 0.45,
+           f_args = list(x_min = log(150), alpha = 1.5, beta = 0.6))
 
 f_min     <- function(x) do.call(f_true, c(list(x), SC$f_args))
 x_grid_m  <- seq(qnorm(0.05, SC$x_mean, SC$x_sd),
@@ -184,9 +190,9 @@ sweep <- t(sapply(rel_levels, function(r) {
 rownames(sweep) <- sprintf("reliability = %.2f", rel_levels)
 round(sweep, 3)
 #>                    Oracle Naive SIMEX
-#> reliability = 0.50  1.189 5.854 3.503
-#> reliability = 0.65  1.189 3.380 2.399
-#> reliability = 0.80  1.189 1.985 1.747
+#> reliability = 0.50  0.011 0.052 0.030
+#> reliability = 0.65  0.011 0.030 0.018
+#> reliability = 0.80  0.011 0.019 0.014
 ```
 
 As reliability falls, the **Naive** ISE inflates sharply from worsening
@@ -231,10 +237,10 @@ ladder_ise <- rowMeans(sapply(ladder_curves,
                               function(M) apply(M, 2, ise_of)))
 data.frame(SIMEX_ISE = round(ladder_ise, 3))
 #>          SIMEX_ISE
-#> W1           1.129
-#> W2           2.502
-#> W3           3.111
-#> Combined     1.764
+#> W1           0.013
+#> W2           0.031
+#> W3           0.044
+#> Combined     0.017
 ```
 
 The single-surrogate ISE ranks by reliability (`W1` best, `W3`

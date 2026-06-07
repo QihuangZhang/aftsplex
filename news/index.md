@@ -34,6 +34,15 @@ baseline are unchanged.
   bit-for-bit reproducible path; parallel runs use independent L’Ecuyer
   streams that are reproducible across worker counts but differ from the
   serial result for the same seed by design.
+- Documentation: new `applied-lpa` article presenting the dose-response
+  on the applied scale – the time-acceleration ratio against
+  light-physical-activity minutes, anchored at a 200 min/day reference,
+  with the lower-support caveat and a two-stage vs single-stage
+  interval-width comparison. The `quickstart` and the `simulation-study`
+  daily-scale section now use the manuscript’s daily-LPA *log* scale
+  (`x_mean = log(300)`, `x_sd = 0.45`), correcting an earlier raw-minute
+  parameterisation. The `faq` article gains a parallel-execution /
+  reproducibility note.
 
 ## aftsplex 0.3.0
 

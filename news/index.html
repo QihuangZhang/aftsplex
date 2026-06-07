@@ -19,6 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
+    <li><a class="dropdown-item" href="../articles/applied-lpa.html">Applied example: daily LPA on the minute / time-ratio scale</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
     <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
@@ -48,6 +49,7 @@
 <li>
 <code><a href="../reference/fit_me_calibration.html">fit_me_calibration()</a></code>, <code><a href="../reference/gls_combine.html">gls_combine()</a></code>, <code><a href="../reference/compute_ise.html">compute_ise()</a></code>, <code><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code>, <code><a href="../reference/build_sigma_u.html">build_sigma_u()</a></code>, and <code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> now validate their inputs and raise informative errors instead of silently propagating <code>NaN</code>/<code>Inf</code> or returning a meaningless result: constant/too-small validation samples, non-finite or uninformative (zero-slope) surrogates, singular surrogate covariances, unsorted or length-mismatched <code><a href="../reference/compute_ise.html">compute_ise()</a></code> arguments, non-positive <code>var_x</code>/<code>ratios</code>/<code>sigma_u_sq</code>, out-of-range <code>rho</code>, and negative <code>x_sd</code>.</li>
 <li>Clarified that the serial (<code>workers = 1</code>) bootstrap is the canonical bit-for-bit reproducible path; parallel runs use independent L’Ecuyer streams that are reproducible across worker counts but differ from the serial result for the same seed by design.</li>
+<li>Documentation: new <code>applied-lpa</code> article presenting the dose-response on the applied scale – the time-acceleration ratio against light-physical-activity minutes, anchored at a 200 min/day reference, with the lower-support caveat and a two-stage vs single-stage interval-width comparison. The <code>quickstart</code> and the <code>simulation-study</code> daily-scale section now use the manuscript’s daily-LPA <em>log</em> scale (<code>x_mean = log(300)</code>, <code>x_sd = 0.45</code>), correcting an earlier raw-minute parameterisation. The <code>faq</code> article gains a parallel-execution / reproducibility note.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="aftsplex-030">aftsplex 0.3.0<a class="anchor" aria-label="anchor" href="#aftsplex-030"></a></h2>

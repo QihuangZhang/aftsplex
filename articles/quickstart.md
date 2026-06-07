@@ -28,14 +28,24 @@ data frame, and the truth used to generate them. The main study has a
 latent exposure `X_true` that is *not* observed in practice; only the
 three noisy surrogates `W1, W2, W3` are.
 
+We put the exposure on the manuscript’s **daily-LPA log scale**:
+`X_true` is `log(LPA minutes)` with mean `log(300)` (about 300 min/day)
+and `sd = 0.45` (95% roughly in \[124, 725\] min), and the dose-response
+threshold sits at `log(150)`. See
+[`vignette("applied-lpa")`](https://qihuangzhang.github.io/aftsplex/articles/applied-lpa.md)
+for displaying the fit back on the minute / time-ratio scale.
+
 ``` r
 
-sim <- generate_aft_data(n = 1000, n_val = 300, seed = 2026)
+XM <- log(300); XS <- 0.45            # ~300 min/day on the log analysis scale
+FA <- list(x_min = log(150), alpha = 1.5, beta = 0.6)
+sim <- generate_aft_data(n = 1000, n_val = 300,
+                         x_mean = XM, x_sd = XS, f_args = FA, seed = 2026)
 head(sim$survival, 3)
-#>      T_obs delta    X_true        W1        W2       W3       V1       V2 V3 V4
-#> 1 826.9194     0 11.164073 12.458170 10.888199 9.588079 38.85282 30.99448  1  1
-#> 2 415.8046     1  7.585738  6.493913  8.156123 6.040509 34.50189 30.82174  1  1
-#> 3 879.5703     0 10.311346  8.533957  9.441355 9.867280 36.65207 30.40219  1  1
+#>      T_obs delta   X_true       W1       W2       W3       V1       V2 V3 V4
+#> 1 826.9194     0 5.938048 7.232145 5.662174 4.362054 38.85282 30.99448  1  1
+#> 2 368.2425     1 5.217922 4.126097 5.788306 3.672692 34.50189 30.82174  1  1
+#> 3 879.5703     0 5.766440 3.989051 4.896449 5.322374 36.65207 30.40219  1  1
 ```
 
 ## Phase-1: Parameter estimation and surrogates aggregation
@@ -56,7 +66,7 @@ scale shift that the GLS step will correct.
 
 cal <- fit_me_calibration(sim$validation)
 cal$alpha1                # close to 1: surrogates are essentially unbiased
-#> [1] 0.9760726 1.0247585 1.0458784
+#> [1] 0.8811036 1.1230261 1.2279714
 round(cal$Sigma_e, 2)     # error covariance across the three surrogates
 #>      [,1] [,2] [,3]
 #> [1,] 1.94 1.00 1.01
@@ -81,7 +91,7 @@ g <- gls_combine(W, cal)
 dat <- sim$survival
 dat$W_bar <- g$W_bar
 round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
-#> [1] 1.42
+#> [1] 1.255
 ```
 
 ## Phase-2: SIMEX point estimate
@@ -141,14 +151,14 @@ summary(s)
 #>   n observations:  1000               Spline df:    4
 #>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
 #>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
-#>   Inner B:         100                sigma_w_sq:   1.4200
+#>   Inner B:         100                sigma_w_sq:   1.2551
 #> 
 #> Centred dose-response (anchored at min(x_grid)):
-#>               5%   25%    50%    75%    95%
-#> x          5.583 7.619 10.164 12.710 14.746
-#> Naive      0.029 0.130  0.201  0.231  0.329
-#> SIMEX      0.043 0.197  0.304  0.293  0.450
-#> Correction 0.013 0.067  0.104  0.063  0.120
+#>                5%    25%   50%    75%    95%
+#> x           3.382  4.364 5.592  6.820  7.802
+#> Naive      -0.012 -0.019 0.076  0.051  0.057
+#> SIMEX      -0.040 -0.091 0.131  0.029  0.036
+#> Correction -0.028 -0.071 0.054 -0.021 -0.021
 ```
 
 A bare [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the
@@ -159,7 +169,8 @@ on real data simply omit it.
 
 ``` r
 
-truth <- f_true(x_grid) - f_true(x_grid[1])
+f_d   <- function(x) do.call(f_true, c(list(x), FA))
+truth <- f_d(x_grid) - f_d(x_grid[1])
 plot(s, truth = truth,
      title = "SIMEX-corrected dose-response (point estimate, B = 100)")
 ```
@@ -223,3 +234,14 @@ plot(s, truth = truth,
 ```
 
 ![](quickstart_files/figure-html/plot-1.png)
+
+## Where to next
+
+This vignette reports the fit on the internal log scale (the AFT
+analysis axis). For the applied presentation – the **time-acceleration
+ratio** against LPA in **minutes**, anchored at a clinical reference of
+200 min/day, with the lower-support caveat – see
+[`vignette("applied-lpa")`](https://qihuangzhang.github.io/aftsplex/articles/applied-lpa.md).
+For parallel execution of the bootstrap, see
+`two_stage_bootstrap(..., workers = 4)` and the note in
+[`vignette("faq")`](https://qihuangzhang.github.io/aftsplex/articles/faq.md).

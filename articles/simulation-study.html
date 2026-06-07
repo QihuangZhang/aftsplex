@@ -36,6 +36,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/quickstart.html">Quick start: AFT + spline + SIMEX</a></li>
+    <li><a class="dropdown-item" href="../articles/applied-lpa.html">Applied example: daily LPA on the minute / time-ratio scale</a></li>
     <li><a class="dropdown-item" href="../articles/simulation-study.html">Simulation study: Oracle vs Naive vs SIMEX</a></li>
     <li><a class="dropdown-item" href="../articles/sensitivity-df.html">Sensitivity analysis: spline degrees of freedom</a></li>
     <li><a class="dropdown-item" href="../articles/coverage-diagnostics.html">Coverage diagnostics: bootstrap SE versus empirical SE</a></li>
@@ -141,7 +142,7 @@ higher locally to reproduce.</p>
 <span><span class="va">elapsed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">t0</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">elapsed</span></span>
-<span><span class="co">#&gt; Time difference of 14.63745 secs</span></span></code></pre></div>
+<span><span class="co">#&gt; Time difference of 15.81021 secs</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="ise-summary">ISE summary<a class="anchor" aria-label="anchor" href="#ise-summary"></a>
@@ -182,15 +183,21 @@ Oracle (attenuation), and SIMEX recovers most of that gap.</p>
 <h2 id="a-daily-minutes-scale-mean-300-min">A daily-minutes scale (mean ~300 min)<a class="anchor" aria-label="anchor" href="#a-daily-minutes-scale-mean-300-min"></a>
 </h2>
 <p>The arbitrary-unit scale above keeps the code minimal, but the
-manuscript expresses the exposure as <strong>daily
-light-physical-activity minutes</strong>. The DGP arguments
-<code>x_mean</code>, <code>x_sd</code>, and <code>f_args</code>
-re-express the same model on that scale – mean ~300 min, a lower
-threshold of 150 min below which the dose-response is flat – without
-touching the package defaults.</p>
+manuscript expresses exposure as <strong>daily light-physical-activity
+(LPA) minutes</strong> on the <strong>log scale</strong> – the analysis
+scale of the AFT model, <code>log T = b0 + f(log W) + ...</code>. The
+DGP arguments <code>x_mean</code>, <code>x_sd</code>, and
+<code>f_args</code> re-express the same model on that scale:
+<code>x_mean = log(300)</code> (about 300 min/day),
+<code>x_sd = 0.45</code> (95% roughly in [124, 725] min), and a
+dose-response threshold at <code>log(150)</code>, below which the curve
+is flat. Display figures exponentiate the axis back to minutes (see the
+<code><a href="../articles/applied-lpa.html">vignette("applied-lpa")</a></code> article); here we keep the internal
+log scale for the ISE comparison, and <code>var_x = x_sd^2</code> is the
+exposure variance fed to <code><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">SC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_mean <span class="op">=</span> <span class="fl">300</span>, x_sd <span class="op">=</span> <span class="fl">75</span>,</span>
-<span>           f_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fl">150</span>, alpha <span class="op">=</span> <span class="fl">0.01</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">SC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">300</span><span class="op">)</span>, x_sd <span class="op">=</span> <span class="fl">0.45</span>,</span>
+<span>           f_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">150</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">1.5</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">f_min</span>     <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">f_true</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="va">SC</span><span class="op">$</span><span class="va">f_args</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">x_grid_m</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">qnorm</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_mean</span>, <span class="va">SC</span><span class="op">$</span><span class="va">x_sd</span><span class="op">)</span>,</span>
@@ -244,9 +251,9 @@ measurement-error covariance.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">sweep</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"reliability = %.2f"</span>, <span class="va">rel_levels</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">sweep</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                    Oracle Naive SIMEX</span></span>
-<span><span class="co">#&gt; reliability = 0.50  1.189 5.854 3.503</span></span>
-<span><span class="co">#&gt; reliability = 0.65  1.189 3.380 2.399</span></span>
-<span><span class="co">#&gt; reliability = 0.80  1.189 1.985 1.747</span></span></code></pre></div>
+<span><span class="co">#&gt; reliability = 0.50  0.011 0.052 0.030</span></span>
+<span><span class="co">#&gt; reliability = 0.65  0.011 0.030 0.018</span></span>
+<span><span class="co">#&gt; reliability = 0.80  0.011 0.019 0.014</span></span></code></pre></div>
 <p>As reliability falls, the <strong>Naive</strong> ISE inflates sharply
 from worsening attenuation, and <strong>SIMEX</strong> removes a large
 part of that excess – roughly halving the Naive ISE at reliability 0.5.
@@ -289,10 +296,10 @@ and on the combiner. This uses the existing
 <span>                              <span class="kw">function</span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">M</span>, <span class="fl">2</span>, <span class="va">ise_of</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>SIMEX_ISE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">ladder_ise</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          SIMEX_ISE</span></span>
-<span><span class="co">#&gt; W1           1.129</span></span>
-<span><span class="co">#&gt; W2           2.502</span></span>
-<span><span class="co">#&gt; W3           3.111</span></span>
-<span><span class="co">#&gt; Combined     1.764</span></span></code></pre></div>
+<span><span class="co">#&gt; W1           0.013</span></span>
+<span><span class="co">#&gt; W2           0.031</span></span>
+<span><span class="co">#&gt; W3           0.044</span></span>
+<span><span class="co">#&gt; Combined     0.017</span></span></code></pre></div>
 <p>The single-surrogate ISE ranks by reliability (<code>W1</code> best,
 <code>W3</code> noisiest), and the combiner sits at or below even the
 best single channel – the payoff for pooling correlated
