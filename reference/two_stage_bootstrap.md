@@ -124,12 +124,17 @@ two_stage_bootstrap(
 - workers:
 
   Integer number of parallel workers for the outer bootstrap loop. `1L`
-  (default) runs serially with unchanged RNG behaviour. When `> 1`,
-  replicates run via
+  (default) runs serially and is the canonical reproducible path: it
+  draws from R's global RNG stream, so a given
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) gives bit-for-bit
+  identical results. When `> 1`, replicates run via
   [`future.apply::future_lapply()`](https://future.apply.futureverse.org/reference/future_lapply.html)
   on a `multisession` plan with per-task L'Ecuyer streams
-  (`future.seed = TRUE`), so results are reproducible and invariant to
-  the worker count. Requires the `future` and `future.apply` packages.
+  (`future.seed = TRUE`); these are reproducible and identical *across
+  worker counts* (e.g. `workers = 2` matches `workers = 3`), but use
+  independent streams and therefore **differ from the serial
+  (`workers = 1`) result for the same seed** by design. Requires the
+  `future` and `future.apply` packages.
 
 - verbose:
 

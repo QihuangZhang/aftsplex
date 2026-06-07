@@ -25,7 +25,7 @@ corrected curve.
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,11 +176,15 @@ surrogate. When set, an <code>in_support</code> vector is returned and a one-sho
 
 <dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
 <dd><p>Integer number of parallel workers for the outer bootstrap
-loop. <code>1L</code> (default) runs serially with unchanged RNG behaviour. When
-<code>&gt; 1</code>, replicates run via <code><a href="https://future.apply.futureverse.org/reference/future_lapply.html" class="external-link">future.apply::future_lapply()</a></code> on a
-<code>multisession</code> plan with per-task L'Ecuyer streams (<code>future.seed = TRUE</code>),
-so results are reproducible and invariant to the worker count. Requires
-the <code>future</code> and <code>future.apply</code> packages.</p></dd>
+loop. <code>1L</code> (default) runs serially and is the canonical reproducible path:
+it draws from R's global RNG stream, so a given <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> gives
+bit-for-bit identical results. When <code>&gt; 1</code>, replicates run via
+<code><a href="https://future.apply.futureverse.org/reference/future_lapply.html" class="external-link">future.apply::future_lapply()</a></code> on a <code>multisession</code> plan with per-task
+L'Ecuyer streams (<code>future.seed = TRUE</code>); these are reproducible and
+identical <em>across worker counts</em> (e.g. <code>workers = 2</code> matches <code>workers = 3</code>),
+but use independent streams and therefore <strong>differ from the serial
+(<code>workers = 1</code>) result for the same seed</strong> by design. Requires the <code>future</code>
+and <code>future.apply</code> packages.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

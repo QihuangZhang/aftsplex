@@ -73,7 +73,7 @@ elapsed <- Sys.time() - t0
 ``` r
 
 elapsed
-#> Time difference of 14.99304 secs
+#> Time difference of 14.63745 secs
 ```
 
 ### ISE summary

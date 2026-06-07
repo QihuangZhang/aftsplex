@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,6 +40,15 @@
       <small>Source: <a href="https://github.com/QihuangZhang/aftsplex/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.1" id="aftsplex-031">aftsplex 0.3.1<a class="anchor" aria-label="anchor" href="#aftsplex-031"></a></h2>
+<p>Robustness fixes surfaced by an adversarial stress-test of 0.3.0. All changes are input guards and a bug fix; valid-input behaviour and the byte-identical <code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> baseline are unchanged.</p>
+<ul><li>
+<code><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap()</a></code> no longer crashes on the serial path (<code>workers = 1</code>, the default) when bootstrap replicates fail. A failed replicate returned <code>NULL</code> and <code>list[[r]] &lt;- NULL</code> deleted the element, shrinking the result list and triggering “missing value where TRUE/FALSE needed”; the documented drop-and-warn behaviour now works on both the serial and parallel paths.</li>
+<li>
+<code><a href="../reference/fit_me_calibration.html">fit_me_calibration()</a></code>, <code><a href="../reference/gls_combine.html">gls_combine()</a></code>, <code><a href="../reference/compute_ise.html">compute_ise()</a></code>, <code><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability()</a></code>, <code><a href="../reference/build_sigma_u.html">build_sigma_u()</a></code>, and <code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> now validate their inputs and raise informative errors instead of silently propagating <code>NaN</code>/<code>Inf</code> or returning a meaningless result: constant/too-small validation samples, non-finite or uninformative (zero-slope) surrogates, singular surrogate covariances, unsorted or length-mismatched <code><a href="../reference/compute_ise.html">compute_ise()</a></code> arguments, non-positive <code>var_x</code>/<code>ratios</code>/<code>sigma_u_sq</code>, out-of-range <code>rho</code>, and negative <code>x_sd</code>.</li>
+<li>Clarified that the serial (<code>workers = 1</code>) bootstrap is the canonical bit-for-bit reproducible path; parallel runs use independent L’Ecuyer streams that are reproducible across worker counts but differ from the serial result for the same seed by design.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="aftsplex-030">aftsplex 0.3.0<a class="anchor" aria-label="anchor" href="#aftsplex-030"></a></h2>
 <p>Realistic-scale data-generating process, two new simulation diagnostics, and a robustness pass on the bootstrap/SIMEX failure modes.</p>
