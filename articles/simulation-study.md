@@ -73,7 +73,7 @@ elapsed <- Sys.time() - t0
 ``` r
 
 elapsed
-#> Time difference of 16.30543 secs
+#> Time difference of 14.85755 secs
 ```
 
 ### ISE summary
@@ -133,7 +133,7 @@ and `var_x = x_sd^2` is the exposure variance fed to
 ``` r
 
 SC <- list(x_mean = log(300), x_sd = 0.45,
-           f_args = list(x_min = log(150), alpha = 1.5, beta = 0.6))
+           f_args = list(x_min = log(150), alpha = 3.0, beta = 0.6))
 
 f_min     <- function(x) do.call(f_true, c(list(x), SC$f_args))
 x_grid_m  <- seq(qnorm(0.05, SC$x_mean, SC$x_sd),
@@ -190,9 +190,9 @@ sweep <- t(sapply(rel_levels, function(r) {
 rownames(sweep) <- sprintf("reliability = %.2f", rel_levels)
 round(sweep, 3)
 #>                    Oracle Naive SIMEX
-#> reliability = 0.50  0.011 0.052 0.030
-#> reliability = 0.65  0.011 0.030 0.018
-#> reliability = 0.80  0.011 0.019 0.014
+#> reliability = 0.50  0.025 0.107 0.058
+#> reliability = 0.65  0.025 0.068 0.036
+#> reliability = 0.80  0.025 0.044 0.029
 ```
 
 As reliability falls, the **Naive** ISE inflates sharply from worsening
@@ -237,10 +237,10 @@ ladder_ise <- rowMeans(sapply(ladder_curves,
                               function(M) apply(M, 2, ise_of)))
 data.frame(SIMEX_ISE = round(ladder_ise, 3))
 #>          SIMEX_ISE
-#> W1           0.013
-#> W2           0.031
-#> W3           0.044
-#> Combined     0.017
+#> W1           0.027
+#> W2           0.060
+#> W3           0.087
+#> Combined     0.033
 ```
 
 The single-surrogate ISE ranks by reliability (`W1` best, `W3`

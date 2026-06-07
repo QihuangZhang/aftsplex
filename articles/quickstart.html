@@ -112,14 +112,15 @@ dose-response threshold sits at <code>log(150)</code>. See
 minute / time-ratio scale.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">XM</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">300</span><span class="op">)</span>; <span class="va">XS</span> <span class="op">&lt;-</span> <span class="fl">0.45</span>            <span class="co"># ~300 min/day on the log analysis scale</span></span>
-<span><span class="va">FA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">150</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">1.5</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, n_val <span class="op">=</span> <span class="fl">300</span>,</span>
+<span><span class="va">FA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">150</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">3.0</span>, beta <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<span><span class="va">Su</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sigma_u_for_reliability.html">sigma_u_for_reliability</a></span><span class="op">(</span><span class="fl">0.5</span>, var_x <span class="op">=</span> <span class="va">XS</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>   <span class="co"># ME calibrated on the log scale</span></span>
+<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/generate_aft_data.html">generate_aft_data</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1000</span>, n_val <span class="op">=</span> <span class="fl">300</span>, Sigma_u <span class="op">=</span> <span class="va">Su</span>,</span>
 <span>                         x_mean <span class="op">=</span> <span class="va">XM</span>, x_sd <span class="op">=</span> <span class="va">XS</span>, f_args <span class="op">=</span> <span class="va">FA</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">survival</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      T_obs delta   X_true       W1       W2       W3       V1       V2 V3 V4</span></span>
-<span><span class="co">#&gt; 1 826.9194     0 5.938048 7.232145 5.662174 4.362054 38.85282 30.99448  1  1</span></span>
-<span><span class="co">#&gt; 2 368.2425     1 5.217922 4.126097 5.788306 3.672692 34.50189 30.82174  1  1</span></span>
-<span><span class="co">#&gt; 3 879.5703     0 5.766440 3.989051 4.896449 5.322374 36.65207 30.40219  1  1</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 826.9194     0 5.938048 6.174898 5.398352 5.955575 38.85282 30.99448  1  1</span></span>
+<span><span class="co">#&gt; 2 414.1523     1 5.217922 4.761600 4.888005 5.277572 34.50189 30.82174  1  1</span></span>
+<span><span class="co">#&gt; 3 879.5703     0 5.766440 5.330563 5.769608 5.382103 36.65207 30.40219  1  1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="phase-1-parameter-estimation-and-surrogates-aggregation">Phase-1: Parameter estimation and surrogates aggregation<a class="anchor" aria-label="anchor" href="#phase-1-parameter-estimation-and-surrogates-aggregation"></a>
@@ -135,12 +136,12 @@ correct.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_me_calibration.html">fit_me_calibration</a></span><span class="op">(</span><span class="va">sim</span><span class="op">$</span><span class="va">validation</span><span class="op">)</span></span>
 <span><span class="va">cal</span><span class="op">$</span><span class="va">alpha1</span>                <span class="co"># close to 1: surrogates are essentially unbiased</span></span>
-<span><span class="co">#&gt; [1] 0.8811036 1.1230261 1.2279714</span></span>
+<span><span class="co">#&gt; [1] 0.9772198 1.0740693 1.0257921</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">cal</span><span class="op">$</span><span class="va">Sigma_e</span>, <span class="fl">2</span><span class="op">)</span>     <span class="co"># error covariance across the three surrogates</span></span>
 <span><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
-<span><span class="co">#&gt; [1,] 1.94 1.00 1.01</span></span>
-<span><span class="co">#&gt; [2,] 1.00 2.63 1.06</span></span>
-<span><span class="co">#&gt; [3,] 1.01 1.06 2.60</span></span></code></pre></div>
+<span><span class="co">#&gt; [1,] 0.16 0.07 0.08</span></span>
+<span><span class="co">#&gt; [2,] 0.07 0.17 0.09</span></span>
+<span><span class="co">#&gt; [3,] 0.08 0.09 0.26</span></span></code></pre></div>
 <p><code><a href="../reference/gls_combine.html">gls_combine()</a></code> applies the per-surrogate back-transform
 <code>W_tilde_j = (W_j - alpha_{0j}) / alpha_{1j}</code> and then
 collapses the back-transformed surrogates with the GLS weights
@@ -155,7 +156,7 @@ variance that SIMEX needs in the next step.</p>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">sim</span><span class="op">$</span><span class="va">survival</span></span>
 <span><span class="va">dat</span><span class="op">$</span><span class="va">W_bar</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">W_bar</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">sigma_w_sq</span>, <span class="fl">3</span><span class="op">)</span>    <span class="co"># residual ME variance fed to SIMEX</span></span>
-<span><span class="co">#&gt; [1] 1.255</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.106</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="phase-2-simex-point-estimate">Phase-2: SIMEX point estimate<a class="anchor" aria-label="anchor" href="#phase-2-simex-point-estimate"></a>
@@ -215,14 +216,14 @@ residual ME attenuation that the correction is undoing.</p>
 <span><span class="co">#&gt;   n observations:  1000               Spline df:    4</span></span>
 <span><span class="co">#&gt;   Covariates:      V1, V2, V3, V4     Distribution: lognormal</span></span>
 <span><span class="co">#&gt;   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0</span></span>
-<span><span class="co">#&gt;   Inner B:         100                sigma_w_sq:   1.2551</span></span>
+<span><span class="co">#&gt;   Inner B:         100                sigma_w_sq:   0.1063</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Centred dose-response (anchored at min(x_grid)):</span></span>
-<span><span class="co">#&gt;                5%    25%   50%    75%    95%</span></span>
-<span><span class="co">#&gt; x           3.382  4.364 5.592  6.820  7.802</span></span>
-<span><span class="co">#&gt; Naive      -0.012 -0.019 0.076  0.051  0.057</span></span>
-<span><span class="co">#&gt; SIMEX      -0.040 -0.091 0.131  0.029  0.036</span></span>
-<span><span class="co">#&gt; Correction -0.028 -0.071 0.054 -0.021 -0.021</span></span></code></pre></div>
+<span><span class="co">#&gt;               5%   25%   50%   75%   95%</span></span>
+<span><span class="co">#&gt; x          4.690 5.140 5.702 6.265 6.715</span></span>
+<span><span class="co">#&gt; Naive      0.025 0.135 0.272 0.257 0.320</span></span>
+<span><span class="co">#&gt; SIMEX      0.031 0.195 0.438 0.330 0.449</span></span>
+<span><span class="co">#&gt; Correction 0.006 0.060 0.166 0.073 0.128</span></span></code></pre></div>
 <p>A bare <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on the SIMEX object draws the corrected
 curve with the naive curve overlaid (the smoothing-bias reference).
 Because we are on simulated data we can also pass <code>truth</code> to

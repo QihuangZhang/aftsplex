@@ -29,11 +29,11 @@ have_gg <- requireNamespace("ggplot2", quietly = TRUE)
 ``` r
 
 XM <- log(300); XS <- 0.45                 # ~300 min/day, 95% ~ [124, 725] min
-FA <- list(x_min = log(150), alpha = 1.5, beta = 0.6)
+FA <- list(x_min = log(150), alpha = 3.0, beta = 0.6)
 V_REF <- c(V1 = 30, V2 = 30, V3 = 0, V4 = 0)
 
 set.seed(2026)
-Su  <- sigma_u_for_reliability(0.7, var_x = XS^2)   # mean reliability 0.70
+Su  <- sigma_u_for_reliability(0.5, var_x = XS^2)   # mean reliability 0.50
 sim <- generate_aft_data(n = 1000, n_val = 300, Sigma_u = Su,
                          x_mean = XM, x_sd = XS, f_args = FA)
 cal <- fit_me_calibration(sim$validation)
@@ -143,7 +143,7 @@ w_single <- mean(boot_single$upper - boot_single$lower, na.rm = TRUE)
 c(two_stage = w_two, single_stage = w_single,
   inflation = w_two / w_single)
 #>    two_stage single_stage    inflation 
-#>    0.3058015    0.2697746    1.1335447
+#>    0.3246416    0.3172668    1.0232447
 ```
 
 When the validation sample is small relative to the main study, the

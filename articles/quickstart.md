@@ -38,14 +38,15 @@ for displaying the fit back on the minute / time-ratio scale.
 ``` r
 
 XM <- log(300); XS <- 0.45            # ~300 min/day on the log analysis scale
-FA <- list(x_min = log(150), alpha = 1.5, beta = 0.6)
-sim <- generate_aft_data(n = 1000, n_val = 300,
+FA <- list(x_min = log(150), alpha = 3.0, beta = 0.6)
+Su <- sigma_u_for_reliability(0.5, var_x = XS^2)   # ME calibrated on the log scale
+sim <- generate_aft_data(n = 1000, n_val = 300, Sigma_u = Su,
                          x_mean = XM, x_sd = XS, f_args = FA, seed = 2026)
 head(sim$survival, 3)
 #>      T_obs delta   X_true       W1       W2       W3       V1       V2 V3 V4
-#> 1 826.9194     0 5.938048 7.232145 5.662174 4.362054 38.85282 30.99448  1  1
-#> 2 368.2425     1 5.217922 4.126097 5.788306 3.672692 34.50189 30.82174  1  1
-#> 3 879.5703     0 5.766440 3.989051 4.896449 5.322374 36.65207 30.40219  1  1
+#> 1 826.9194     0 5.938048 6.174898 5.398352 5.955575 38.85282 30.99448  1  1
+#> 2 414.1523     1 5.217922 4.761600 4.888005 5.277572 34.50189 30.82174  1  1
+#> 3 879.5703     0 5.766440 5.330563 5.769608 5.382103 36.65207 30.40219  1  1
 ```
 
 ## Phase-1: Parameter estimation and surrogates aggregation
@@ -66,12 +67,12 @@ scale shift that the GLS step will correct.
 
 cal <- fit_me_calibration(sim$validation)
 cal$alpha1                # close to 1: surrogates are essentially unbiased
-#> [1] 0.8811036 1.1230261 1.2279714
+#> [1] 0.9772198 1.0740693 1.0257921
 round(cal$Sigma_e, 2)     # error covariance across the three surrogates
 #>      [,1] [,2] [,3]
-#> [1,] 1.94 1.00 1.01
-#> [2,] 1.00 2.63 1.06
-#> [3,] 1.01 1.06 2.60
+#> [1,] 0.16 0.07 0.08
+#> [2,] 0.07 0.17 0.09
+#> [3,] 0.08 0.09 0.26
 ```
 
 [`gls_combine()`](https://qihuangzhang.github.io/aftsplex/reference/gls_combine.md)
@@ -91,7 +92,7 @@ g <- gls_combine(W, cal)
 dat <- sim$survival
 dat$W_bar <- g$W_bar
 round(g$sigma_w_sq, 3)    # residual ME variance fed to SIMEX
-#> [1] 1.255
+#> [1] 0.106
 ```
 
 ## Phase-2: SIMEX point estimate
@@ -151,14 +152,14 @@ summary(s)
 #>   n observations:  1000               Spline df:    4
 #>   Covariates:      V1, V2, V3, V4     Distribution: lognormal
 #>   Lambda grid:     0.0, 0.5, 1.0, 1.5, 2.0
-#>   Inner B:         100                sigma_w_sq:   1.2551
+#>   Inner B:         100                sigma_w_sq:   0.1063
 #> 
 #> Centred dose-response (anchored at min(x_grid)):
-#>                5%    25%   50%    75%    95%
-#> x           3.382  4.364 5.592  6.820  7.802
-#> Naive      -0.012 -0.019 0.076  0.051  0.057
-#> SIMEX      -0.040 -0.091 0.131  0.029  0.036
-#> Correction -0.028 -0.071 0.054 -0.021 -0.021
+#>               5%   25%   50%   75%   95%
+#> x          4.690 5.140 5.702 6.265 6.715
+#> Naive      0.025 0.135 0.272 0.257 0.320
+#> SIMEX      0.031 0.195 0.438 0.330 0.449
+#> Correction 0.006 0.060 0.166 0.073 0.128
 ```
 
 A bare [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on the
