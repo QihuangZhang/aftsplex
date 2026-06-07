@@ -22,6 +22,7 @@ home:
         title: Articles
         text: |
           - [Get started](articles/quickstart.html)
+          - [Applied example: daily LPA (minute / time-ratio scale)](articles/applied-lpa.html)
           - [Simulation study: Oracle vs Naive vs SIMEX](articles/simulation-study.html)
           - [Sensitivity analysis: spline degrees of freedom](articles/sensitivity-df.html)
 
@@ -69,6 +70,7 @@ articles:
   - title: Practical workflows
     navbar: ~
     contents:
+      - applied-lpa
       - simulation-study
       - sensitivity-df
       - coverage-diagnostics

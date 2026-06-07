@@ -76,3 +76,23 @@ When `two_stage_bootstrap()` warns or returns `NA` summaries:
 
 See the [Quick start](quickstart.html) article for runnable examples of
 `support_probs`, `x_ref`, and the other 0.2.0 options.
+
+## Parallel execution and reproducibility
+
+The outer bootstrap loop is the dominant cost, and it parallelises over the
+`workers` argument (via `future.apply`):
+
+```{r workers}
+two_stage_bootstrap(survival, validation, x_var = "X_true",
+                    covariates = covs, v_ref = v_ref,
+                    x_grid = x_grid, R = 200, workers = 4)
+```
+
+One reproducibility caveat. The serial path (`workers = 1`, the default) is the
+**canonical** path: it draws from R's global RNG, so a given `set.seed()` gives
+bit-for-bit identical results. The parallel path (`workers > 1`) uses
+independent L'Ecuyer streams, which are reproducible **across worker counts**
+(`workers = 2` matches `workers = 3`) but **differ from the serial result** for
+the same seed — by design. Use serial when you need byte-identical
+reproducibility against a stored baseline; use parallel for speed, fixing
+`workers` for a reproducible parallel run.
