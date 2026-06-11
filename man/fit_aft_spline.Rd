@@ -33,8 +33,14 @@ Pass \code{character(0)} (the default) for an exposure-only model.}
 
 \item{status_var}{Name of the event indicator column. Default \code{"delta"}.}
 
-\item{dist}{\code{survreg} distribution. Default \code{"lognormal"} matches the DGP
-in \code{\link[=generate_aft_data]{generate_aft_data()}}.}
+\item{dist}{Parametric AFT error distribution, passed directly to the
+\code{dist} argument of \code{\link[survival:survreg]{survival::survreg()}}. Any distribution \code{survreg}
+accepts is valid here, including \code{"weibull"}, \code{"exponential"},
+\code{"loglogistic"}, \code{"lognormal"}, and \code{"gaussian"}; see
+\code{\link[survival:survreg]{survival::survreg()}} for the full, authoritative list. The default
+\code{"lognormal"} matches the DGP in \code{\link[=generate_aft_data]{generate_aft_data()}}. Select another
+family to fit your data under, or to run a sensitivity analysis against,
+an alternative AFT distribution.}
 
 \item{control}{Optional \code{\link[survival:survreg.control]{survival::survreg.control()}} object.}
 }

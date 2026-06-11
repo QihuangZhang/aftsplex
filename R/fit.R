@@ -16,8 +16,14 @@
 #' @param knots Optional numeric vector of interior knot locations.
 #' @param outcome_var Name of the time-to-event column. Default `"T_obs"`.
 #' @param status_var Name of the event indicator column. Default `"delta"`.
-#' @param dist `survreg` distribution. Default `"lognormal"` matches the DGP
-#'   in [generate_aft_data()].
+#' @param dist Parametric AFT error distribution, passed directly to the
+#'   `dist` argument of [survival::survreg()]. Any distribution `survreg`
+#'   accepts is valid here, including `"weibull"`, `"exponential"`,
+#'   `"loglogistic"`, `"lognormal"`, and `"gaussian"`; see
+#'   [survival::survreg()] for the full, authoritative list. The default
+#'   `"lognormal"` matches the DGP in [generate_aft_data()]. Select another
+#'   family to fit your data under, or to run a sensitivity analysis against,
+#'   an alternative AFT distribution.
 #' @param control Optional [survival::survreg.control()] object.
 #'
 #' @return A `survreg` fitted-model object.

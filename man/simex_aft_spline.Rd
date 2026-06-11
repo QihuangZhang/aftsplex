@@ -38,7 +38,7 @@ simex_aft_spline(
 \item{v_ref}{Named numeric vector of reference covariate values matching
 \code{covariates}. \code{NULL} if no covariates.}
 
-\item{df, knots, dist}{Passed to \code{\link[=fit_aft_spline]{fit_aft_spline()}}.}
+\item{df, knots}{Passed to \code{\link[=fit_aft_spline]{fit_aft_spline()}}.}
 
 \item{outcome_var, status_var}{Passed to \code{\link[=fit_aft_spline]{fit_aft_spline()}}.}
 
@@ -46,6 +46,11 @@ simex_aft_spline(
 appended internally as the naive fit). Default \code{c(0.5, 1, 1.5, 2)}.}
 
 \item{B}{Number of inner replicates per lambda.}
+
+\item{dist}{Parametric AFT distribution, passed through to
+\code{\link[=fit_aft_spline]{fit_aft_spline()}} and on to \code{\link[survival:survreg]{survival::survreg()}}; any \code{survreg}
+distribution (e.g. \code{"weibull"}, \code{"loglogistic"}) is valid. Default
+\code{"lognormal"}.}
 
 \item{x_grid}{Numeric grid of exposure values at which to evaluate the
 corrected curve. Defaults to 100 equally spaced points spanning
@@ -90,7 +95,10 @@ model fitted by \code{\link[=fit_aft_spline]{fit_aft_spline()}}. For each \code{
 grid, draws \code{B} perturbed surrogates with additional noise
 \code{sqrt(lambda * sigma_w_sq) * N(0, 1)}, refits, averages the centred
 linear predictor across \code{B}, then extrapolates to \code{lambda = -1} via a
-pointwise quadratic OLS.
+pointwise quadratic OLS. Higher-order polynomial extrapolants (the
+generalized SIMEX of Chen and Zhang 2026) can lower the extrapolation bias
+when the measurement error is large; the quadratic is retained here as the
+standard, transparent default.
 }
 \details{
 Inner \code{survreg} fits are wrapped in convergence handling: fits that
@@ -113,4 +121,17 @@ s <- simex_aft_spline(dat, x_var = "W_bar",
 summary(s)
 }
 
+}
+\references{
+Cook JR, Stefanski LA (1994). Simulation-extrapolation estimation in
+parametric measurement error models. \emph{Journal of the American
+Statistical Association}, 89(428), 1314--1328.
+
+Carroll RJ, Kuchenhoff H, Lombard F, Stefanski LA (1996). Asymptotics for
+the SIMEX estimator in nonlinear measurement error models. \emph{Journal of
+the American Statistical Association}, 91(433), 242--250.
+
+Chen LP, Zhang Q (2026). Generalized SIMEX method: polynomial approximation
+for extrapolation. \emph{Statistics in Medicine}, 45(6--7), e70460.
+\doi{10.1002/sim.70460}
 }

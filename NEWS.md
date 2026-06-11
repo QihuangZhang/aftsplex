@@ -1,3 +1,11 @@
+# aftsplex 0.3.2
+
+* Documentation: clarified the `dist` argument of `fit_aft_spline()`,
+  `simex_aft_spline()`, and `two_stage_bootstrap()`. It accepts any
+  distribution supported by `survival::survreg()` (e.g. `"weibull"`,
+  `"loglogistic"`, `"exponential"`, `"gaussian"`), with `"lognormal"` only the
+  default; the help pages now link to `survival::survreg()` for the full list.
+
 # aftsplex 0.3.1
 
 Robustness fixes surfaced by an adversarial stress-test of 0.3.0. All changes are

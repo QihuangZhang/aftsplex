@@ -50,7 +50,7 @@ name used in both \code{validation} and the bootstrap-recombined
 \item{surrogate_pattern}{Regex used to identify surrogate columns;
 default \code{"^W[0-9]+$"}.}
 
-\item{df, knots, lambda, B, dist}{Passed to \code{\link[=simex_aft_spline]{simex_aft_spline()}}.}
+\item{df, knots, lambda, B}{Passed to \code{\link[=simex_aft_spline]{simex_aft_spline()}}.}
 
 \item{outcome_var, status_var}{Passed to \code{\link[=simex_aft_spline]{simex_aft_spline()}}.}
 
@@ -87,6 +87,11 @@ identical \emph{across worker counts} (e.g. \code{workers = 2} matches \code{wor
 but use independent streams and therefore \strong{differ from the serial
 (\code{workers = 1}) result for the same seed} by design. Requires the \code{future}
 and \code{future.apply} packages.}
+
+\item{dist}{Parametric AFT distribution, threaded through
+\code{\link[=simex_aft_spline]{simex_aft_spline()}} to \code{\link[=fit_aft_spline]{fit_aft_spline()}}/\code{\link[survival:survreg]{survival::survreg()}}; any
+\code{survreg} distribution (e.g. \code{"weibull"}, \code{"loglogistic"}) is valid.
+Default \code{"lognormal"}.}
 
 \item{verbose}{Print progress bar? (Serial path only.)}
 }

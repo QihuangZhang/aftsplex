@@ -30,7 +30,11 @@
 #'   `covariates`. `NULL` if no covariates.
 #' @param surrogate_pattern Regex used to identify surrogate columns;
 #'   default `"^W[0-9]+$"`.
-#' @param df,knots,lambda,B,dist Passed to [simex_aft_spline()].
+#' @param df,knots,lambda,B Passed to [simex_aft_spline()].
+#' @param dist Parametric AFT distribution, threaded through
+#'   [simex_aft_spline()] to [fit_aft_spline()]/[survival::survreg()]; any
+#'   `survreg` distribution (e.g. `"weibull"`, `"loglogistic"`) is valid.
+#'   Default `"lognormal"`.
 #' @param outcome_var,status_var Passed to [simex_aft_spline()].
 #' @param R Number of outer bootstrap replicates.
 #' @param x_grid Numeric exposure grid for the curve. If `NULL`, taken as

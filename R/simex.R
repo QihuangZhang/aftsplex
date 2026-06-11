@@ -6,7 +6,10 @@
 #' grid, draws `B` perturbed surrogates with additional noise
 #' `sqrt(lambda * sigma_w_sq) * N(0, 1)`, refits, averages the centred
 #' linear predictor across `B`, then extrapolates to `lambda = -1` via a
-#' pointwise quadratic OLS.
+#' pointwise quadratic OLS. Higher-order polynomial extrapolants (the
+#' generalized SIMEX of Chen and Zhang 2026) can lower the extrapolation bias
+#' when the measurement error is large; the quadratic is retained here as the
+#' standard, transparent default.
 #'
 #' Inner `survreg` fits are wrapped in convergence handling: fits that
 #' fail to converge within `maxiter` iterations are dropped from the
@@ -20,7 +23,11 @@
 #' @param covariates Character vector of confounder column names.
 #' @param v_ref Named numeric vector of reference covariate values matching
 #'   `covariates`. `NULL` if no covariates.
-#' @param df,knots,dist Passed to [fit_aft_spline()].
+#' @param df,knots Passed to [fit_aft_spline()].
+#' @param dist Parametric AFT distribution, passed through to
+#'   [fit_aft_spline()] and on to [survival::survreg()]; any `survreg`
+#'   distribution (e.g. `"weibull"`, `"loglogistic"`) is valid. Default
+#'   `"lognormal"`.
 #' @param outcome_var,status_var Passed to [fit_aft_spline()].
 #' @param lambda Numeric grid of SIMEX lambda values (excluding 0; 0 is
 #'   appended internally as the naive fit). Default `c(0.5, 1, 1.5, 2)`.
@@ -69,6 +76,19 @@
 #'                       lambda = c(0.5, 1, 1.5, 2), B = 10)
 #' summary(s)
 #' }
+#'
+#' @references
+#' Cook JR, Stefanski LA (1994). Simulation-extrapolation estimation in
+#' parametric measurement error models. \emph{Journal of the American
+#' Statistical Association}, 89(428), 1314--1328.
+#'
+#' Carroll RJ, Kuchenhoff H, Lombard F, Stefanski LA (1996). Asymptotics for
+#' the SIMEX estimator in nonlinear measurement error models. \emph{Journal of
+#' the American Statistical Association}, 91(433), 242--250.
+#'
+#' Chen LP, Zhang Q (2026). Generalized SIMEX method: polynomial approximation
+#' for extrapolation. \emph{Statistics in Medicine}, 45(6--7), e70460.
+#' \doi{10.1002/sim.70460}
 #'
 #' @export
 simex_aft_spline <- function(
