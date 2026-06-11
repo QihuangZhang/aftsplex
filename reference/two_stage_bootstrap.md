@@ -77,7 +77,7 @@ two_stage_bootstrap(
 
   Regex used to identify surrogate columns; default `"^W[0-9]+$"`.
 
-- df, knots, lambda, B, dist:
+- df, knots, lambda, B:
 
   Passed to
   [`simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/simex_aft_spline.md).
@@ -135,6 +135,15 @@ two_stage_bootstrap(
   independent streams and therefore **differ from the serial
   (`workers = 1`) result for the same seed** by design. Requires the
   `future` and `future.apply` packages.
+
+- dist:
+
+  Parametric AFT distribution, threaded through
+  [`simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/simex_aft_spline.md)
+  to
+  [`fit_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/fit_aft_spline.md)/[`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html);
+  any `survreg` distribution (e.g. `"weibull"`, `"loglogistic"`) is
+  valid. Default `"lognormal"`.
 
 - verbose:
 

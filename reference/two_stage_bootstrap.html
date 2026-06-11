@@ -25,7 +25,7 @@ corrected curve.
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -134,7 +134,7 @@ name used in both <code>validation</code> and the bootstrap-recombined
 default <code>"^W[0-9]+$"</code>.</p></dd>
 
 
-<dt id="arg-df-knots-lambda-b-dist">df, knots, lambda, B, dist<a class="anchor" aria-label="anchor" href="#arg-df-knots-lambda-b-dist"></a></dt>
+<dt id="arg-df-knots-lambda-b">df, knots, lambda, B<a class="anchor" aria-label="anchor" href="#arg-df-knots-lambda-b"></a></dt>
 <dd><p>Passed to <code><a href="simex_aft_spline.html">simex_aft_spline()</a></code>.</p></dd>
 
 
@@ -186,6 +186,13 @@ identical <em>across worker counts</em> (e.g. <code>workers = 2</code> matches <
 but use independent streams and therefore <strong>differ from the serial
 (<code>workers = 1</code>) result for the same seed</strong> by design. Requires the <code>future</code>
 and <code>future.apply</code> packages.</p></dd>
+
+
+<dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
+<dd><p>Parametric AFT distribution, threaded through
+<code><a href="simex_aft_spline.html">simex_aft_spline()</a></code> to <code><a href="fit_aft_spline.html">fit_aft_spline()</a></code>/<code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code>; any
+<code>survreg</code> distribution (e.g. <code>"weibull"</code>, <code>"loglogistic"</code>) is valid.
+Default <code>"lognormal"</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

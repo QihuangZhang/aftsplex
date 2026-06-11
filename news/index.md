@@ -1,5 +1,19 @@
 # Changelog
 
+## aftsplex 0.3.2
+
+- Documentation: clarified the `dist` argument of
+  [`fit_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/fit_aft_spline.md),
+  [`simex_aft_spline()`](https://qihuangzhang.github.io/aftsplex/reference/simex_aft_spline.md),
+  and
+  [`two_stage_bootstrap()`](https://qihuangzhang.github.io/aftsplex/reference/two_stage_bootstrap.md).
+  It accepts any distribution supported by
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
+  (e.g. `"weibull"`, `"loglogistic"`, `"exponential"`, `"gaussian"`),
+  with `"lognormal"` only the default; the help pages now link to
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
+  for the full list.
+
 ## aftsplex 0.3.1
 
 Robustness fixes surfaced by an adversarial stress-test of 0.3.0. All

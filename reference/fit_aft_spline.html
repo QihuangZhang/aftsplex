@@ -17,7 +17,7 @@ simex_aft_spline()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -111,8 +111,14 @@ Pass <code>character(0)</code> (the default) for an exposure-only model.</p></dd
 
 
 <dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
-<dd><p><code>survreg</code> distribution. Default <code>"lognormal"</code> matches the DGP
-in <code><a href="generate_aft_data.html">generate_aft_data()</a></code>.</p></dd>
+<dd><p>Parametric AFT error distribution, passed directly to the
+<code>dist</code> argument of <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code>. Any distribution <code>survreg</code>
+accepts is valid here, including <code>"weibull"</code>, <code>"exponential"</code>,
+<code>"loglogistic"</code>, <code>"lognormal"</code>, and <code>"gaussian"</code>; see
+<code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code> for the full, authoritative list. The default
+<code>"lognormal"</code> matches the DGP in <code><a href="generate_aft_data.html">generate_aft_data()</a></code>. Select another
+family to fit your data under, or to run a sensitivity analysis against,
+an alternative AFT distribution.</p></dd>
 
 
 <dt id="arg-control">control<a class="anchor" aria-label="anchor" href="#arg-control"></a></dt>

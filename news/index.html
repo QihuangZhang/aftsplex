@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,10 @@
       <small>Source: <a href="https://github.com/QihuangZhang/aftsplex/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.2" id="aftsplex-032">aftsplex 0.3.2<a class="anchor" aria-label="anchor" href="#aftsplex-032"></a></h2>
+<ul><li>Documentation: clarified the <code>dist</code> argument of <code><a href="../reference/fit_aft_spline.html">fit_aft_spline()</a></code>, <code><a href="../reference/simex_aft_spline.html">simex_aft_spline()</a></code>, and <code><a href="../reference/two_stage_bootstrap.html">two_stage_bootstrap()</a></code>. It accepts any distribution supported by <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code> (e.g. <code>"weibull"</code>, <code>"loglogistic"</code>, <code>"exponential"</code>, <code>"gaussian"</code>), with <code>"lognormal"</code> only the default; the help pages now link to <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code> for the full list.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="aftsplex-031">aftsplex 0.3.1<a class="anchor" aria-label="anchor" href="#aftsplex-031"></a></h2>
 <p>Robustness fixes surfaced by an adversarial stress-test of 0.3.0. All changes are input guards and a bug fix; valid-input behaviour and the byte-identical <code><a href="../reference/generate_aft_data.html">generate_aft_data()</a></code> baseline are unchanged.</p>

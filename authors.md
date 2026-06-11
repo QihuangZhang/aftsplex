@@ -11,12 +11,12 @@ Source:
 
 Zhang Q (2026). *aftsplex: AFT + Spline + SIMEX for Nonlinear
 Dose-Response with Multivariate Measurement Error*. R package version
-0.3.1, <https://qihuangzhang.github.io/aftsplex/>.
+0.3.2, <https://qihuangzhang.github.io/aftsplex/>.
 
     @Manual{,
       title = {aftsplex: AFT + Spline + SIMEX for Nonlinear Dose-Response with Multivariate Measurement Error},
       author = {Qihuang Zhang},
       year = {2026},
-      note = {R package version 0.3.1},
+      note = {R package version 0.3.2},
       url = {https://qihuangzhang.github.io/aftsplex/},
     }

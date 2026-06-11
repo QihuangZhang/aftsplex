@@ -5,13 +5,19 @@ model fitted by fit_aft_spline(). For each lambda in the supplied
 grid, draws B perturbed surrogates with additional noise
 sqrt(lambda * sigma_w_sq) * N(0, 1), refits, averages the centred
 linear predictor across B, then extrapolates to lambda = -1 via a
-pointwise quadratic OLS."><meta property="og:description" content="Implements simulation-extrapolation (Cook and Stefanski 1994; Carroll,
+pointwise quadratic OLS. Higher-order polynomial extrapolants (the
+generalized SIMEX of Chen and Zhang 2026) can lower the extrapolation bias
+when the measurement error is large; the quadratic is retained here as the
+standard, transparent default."><meta property="og:description" content="Implements simulation-extrapolation (Cook and Stefanski 1994; Carroll,
 Kuchenhoff, Lombard and Stefanski 1996) for a natural-cubic-spline AFT
 model fitted by fit_aft_spline(). For each lambda in the supplied
 grid, draws B perturbed surrogates with additional noise
 sqrt(lambda * sigma_w_sq) * N(0, 1), refits, averages the centred
 linear predictor across B, then extrapolates to lambda = -1 via a
-pointwise quadratic OLS."></head><body>
+pointwise quadratic OLS. Higher-order polynomial extrapolants (the
+generalized SIMEX of Chen and Zhang 2026) can lower the extrapolation bias
+when the measurement error is large; the quadratic is retained here as the
+standard, transparent default."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -19,7 +25,7 @@ pointwise quadratic OLS."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +67,10 @@ model fitted by <code><a href="fit_aft_spline.html">fit_aft_spline()</a></code>.
 grid, draws <code>B</code> perturbed surrogates with additional noise
 <code>sqrt(lambda * sigma_w_sq) * N(0, 1)</code>, refits, averages the centred
 linear predictor across <code>B</code>, then extrapolates to <code>lambda = -1</code> via a
-pointwise quadratic OLS.</p>
+pointwise quadratic OLS. Higher-order polynomial extrapolants (the
+generalized SIMEX of Chen and Zhang 2026) can lower the extrapolation bias
+when the measurement error is large; the quadratic is retained here as the
+standard, transparent default.</p>
     </div>
 
     <div class="section level2">
@@ -114,7 +123,7 @@ pointwise quadratic OLS.</p>
 <code>covariates</code>. <code>NULL</code> if no covariates.</p></dd>
 
 
-<dt id="arg-df-knots-dist">df, knots, dist<a class="anchor" aria-label="anchor" href="#arg-df-knots-dist"></a></dt>
+<dt id="arg-df-knots">df, knots<a class="anchor" aria-label="anchor" href="#arg-df-knots"></a></dt>
 <dd><p>Passed to <code><a href="fit_aft_spline.html">fit_aft_spline()</a></code>.</p></dd>
 
 
@@ -129,6 +138,13 @@ appended internally as the naive fit). Default <code>c(0.5, 1, 1.5, 2)</code>.</
 
 <dt id="arg-b">B<a class="anchor" aria-label="anchor" href="#arg-b"></a></dt>
 <dd><p>Number of inner replicates per lambda.</p></dd>
+
+
+<dt id="arg-dist">dist<a class="anchor" aria-label="anchor" href="#arg-dist"></a></dt>
+<dd><p>Parametric AFT distribution, passed through to
+<code><a href="fit_aft_spline.html">fit_aft_spline()</a></code> and on to <code><a href="https://rdrr.io/pkg/survival/man/survreg.html" class="external-link">survival::survreg()</a></code>; any <code>survreg</code>
+distribution (e.g. <code>"weibull"</code>, <code>"loglogistic"</code>) is valid. Default
+<code>"lognormal"</code>.</p></dd>
 
 
 <dt id="arg-x-grid">x_grid<a class="anchor" aria-label="anchor" href="#arg-x-grid"></a></dt>
@@ -180,6 +196,18 @@ and <code><a href="plot.simex_aft_spline.html">plot.simex_aft_spline()</a></code
     <p>Inner <code>survreg</code> fits are wrapped in convergence handling: fits that
 fail to converge within <code>maxiter</code> iterations are dropped from the
 average via <code>na.rm = TRUE</code>, and the count is reported if <code>verbose = TRUE</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Cook JR, Stefanski LA (1994). Simulation-extrapolation estimation in
+parametric measurement error models. <em>Journal of the American
+Statistical Association</em>, 89(428), 1314–1328.</p>
+<p>Carroll RJ, Kuchenhoff H, Lombard F, Stefanski LA (1996). Asymptotics for
+the SIMEX estimator in nonlinear measurement error models. <em>Journal of
+the American Statistical Association</em>, 91(433), 242–250.</p>
+<p>Chen LP, Zhang Q (2026). Generalized SIMEX method: polynomial approximation
+for extrapolation. <em>Statistics in Medicine</em>, 45(6–7), e70460.
+<a href="https://doi.org/10.1002/sim.70460" class="external-link">doi:10.1002/sim.70460</a></p>
     </div>
 
     <div class="section level2">

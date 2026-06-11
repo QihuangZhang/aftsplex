@@ -60,8 +60,18 @@ fit_aft_spline(
 
 - dist:
 
-  `survreg` distribution. Default `"lognormal"` matches the DGP in
+  Parametric AFT error distribution, passed directly to the `dist`
+  argument of
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html).
+  Any distribution `survreg` accepts is valid here, including
+  `"weibull"`, `"exponential"`, `"loglogistic"`, `"lognormal"`, and
+  `"gaussian"`; see
+  [`survival::survreg()`](https://rdrr.io/pkg/survival/man/survreg.html)
+  for the full, authoritative list. The default `"lognormal"` matches
+  the DGP in
   [`generate_aft_data()`](https://qihuangzhang.github.io/aftsplex/reference/generate_aft_data.md).
+  Select another family to fit your data under, or to run a sensitivity
+  analysis against, an alternative AFT distribution.
 
 - control:
 
