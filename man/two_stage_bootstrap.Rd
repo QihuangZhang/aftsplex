@@ -96,7 +96,8 @@ Default \code{"lognormal"}.}
 \item{verbose}{Print progress bar? (Serial path only.)}
 }
 \value{
-A list with elements
+An object of class \code{"two_stage_bootstrap"} (a list, with a
+\link[=summary.two_stage_bootstrap]{summary()} method) with elements
 \itemize{
 \item \code{x_grid} exposure grid,
 \item \code{f_hat} single-fit SIMEX point estimate (full-sample, no resampling),
@@ -107,7 +108,8 @@ A list with elements
 \item \code{f_bc} bias-corrected point estimate \code{2*f_hat - bs_mean},
 \item \verb{sigma_w_sq_boot, omega_boot} per-replicate Phase-1 summaries,
 \item \code{in_support} logical support flag (or \code{NULL}),
-\item \code{R_effective} number of replicates that produced a curve.
+\item \code{R_effective} number of replicates that produced a curve,
+\item \code{x_ref} the reference exposure used to anchor the curves (or \code{NULL}).
 }
 
 The percentile CI is the primary interval; the basic (reverse-percentile)

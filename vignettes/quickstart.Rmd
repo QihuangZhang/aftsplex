@@ -183,6 +183,15 @@ boot <- two_stage_bootstrap(
 )
 ```
 
+Calling `summary()` on the returned object reports the replicate yield, the
+exposure grid and anchor, the Phase-1 `sigma_w_sq` spread across the bootstrap
+calibrations, and the corrected curve with its 95% percentile interval at
+quantiles of the exposure grid:
+
+```{r boot-summary}
+summary(boot)
+```
+
 ## Plot with the bootstrap confidence band
 
 The `plot()` method on the SIMEX object accepts a `ci` argument with

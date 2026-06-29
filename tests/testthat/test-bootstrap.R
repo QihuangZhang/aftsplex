@@ -89,3 +89,33 @@ test_that("workers > 1 is reproducible under a fixed seed", {
   set.seed(7); b <- do.call(two_stage_bootstrap, args)
   expect_equal(a$curves, b$curves)
 })
+
+test_that("summary() dispatches and tabulates the bootstrap curve", {
+  sim <- generate_aft_data(n = 200, n_val = 80, seed = 1)
+  set.seed(1)
+  boot <- two_stage_bootstrap(
+    survival = sim$survival, validation = sim$validation, x_var = "X_true",
+    covariates = c("V1","V2","V3","V4"), v_ref = c(V1 = 30, V2 = 30, V3 = 0, V4 = 0),
+    lambda = c(0.5, 1, 2), B = 3, R = 4, x_grid = seq(7, 13, length.out = 20)
+  )
+  expect_s3_class(boot, "two_stage_bootstrap")
+
+  s <- summary(boot)
+  expect_s3_class(s, "summary.two_stage_bootstrap")
+  expect_equal(s$R, 4L)
+  expect_equal(s$R_effective, boot$R_effective)
+  expect_true(is.matrix(s$table))
+  expect_equal(rownames(s$table), c("x", "SIMEX", "lower", "upper"))
+  expect_equal(ncol(s$table), 5L)
+  expect_output(print(s), "Two-stage bootstrap")
+
+  # An all-failed bootstrap still summarises without error.
+  sv <- sim$survival; sv$delta <- 0L
+  failed <- suppressWarnings(two_stage_bootstrap(
+    survival = sv, validation = sim$validation, x_var = "X_true",
+    covariates = c("V1","V2","V3","V4"), v_ref = c(V1 = 30, V2 = 30, V3 = 0, V4 = 0),
+    lambda = c(0.5, 1, 2), B = 3, R = 4, x_grid = seq(7, 13, length.out = 20)
+  ))
+  expect_equal(failed$R_effective, 0L)
+  expect_output(print(summary(failed)), "Two-stage bootstrap")
+})

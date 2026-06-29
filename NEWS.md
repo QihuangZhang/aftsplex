@@ -1,3 +1,12 @@
+# aftsplex 0.3.3
+
+* `two_stage_bootstrap()` now returns a classed `"two_stage_bootstrap"` object
+  with a `summary()` method: a quantile table of the corrected curve and its
+  95% percentile CI, plus the replicate yield, the exposure anchor, and the
+  Phase-1 `sigma_w_sq` spread across the replicates whose calibration succeeded.
+  Previously `summary()` fell through to the generic list output. The returned
+  object also gains an `x_ref` element; existing element access is unchanged.
+
 # aftsplex 0.3.2
 
 * Documentation: clarified the `dist` argument of `fit_aft_spline()`,

@@ -54,6 +54,7 @@ reference:
   - title: Inference — two-stage bootstrap
     contents:
       - two_stage_bootstrap
+      - summary.two_stage_bootstrap
 
   - title: Evaluation and visualisation
     contents:

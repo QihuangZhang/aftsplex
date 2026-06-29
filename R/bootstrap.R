@@ -66,7 +66,8 @@
 #'   and `future.apply` packages.
 #' @param verbose Print progress bar? (Serial path only.)
 #'
-#' @return A list with elements
+#' @return An object of class `"two_stage_bootstrap"` (a list, with a
+#'   [summary()][summary.two_stage_bootstrap] method) with elements
 #'   * `x_grid` exposure grid,
 #'   * `f_hat` single-fit SIMEX point estimate (full-sample, no resampling),
 #'   * `bs_mean` mean of the bootstrap curves,
@@ -76,7 +77,8 @@
 #'   * `f_bc` bias-corrected point estimate `2*f_hat - bs_mean`,
 #'   * `sigma_w_sq_boot, omega_boot` per-replicate Phase-1 summaries,
 #'   * `in_support` logical support flag (or `NULL`),
-#'   * `R_effective` number of replicates that produced a curve.
+#'   * `R_effective` number of replicates that produced a curve,
+#'   * `x_ref` the reference exposure used to anchor the curves (or `NULL`).
 #'
 #' The percentile CI is the primary interval; the basic (reverse-percentile)
 #' CI is kept for completeness but does not improve coverage on simulated
@@ -302,20 +304,112 @@ two_stage_bootstrap <- function(survival, validation, x_var = "X_true",
   bs_mean <- rowMeans(curves, na.rm = TRUE)
   bs_mean[is.nan(bs_mean)] <- NA_real_
 
-  list(
-    x_grid      = x_grid,
-    f_hat       = f_hat,
-    bs_mean     = bs_mean,
-    curves      = curves,
-    median      = apply(curves, 1, safe_median),
-    lower       = q025,
-    upper       = q975,
-    lower_basic = 2 * f_hat - q975,
-    upper_basic = 2 * f_hat - q025,
-    f_bc        = 2 * f_hat - bs_mean,
-    sigma_w_sq_boot = sigma_w_sq_boot,
-    omega_boot      = omega_boot,
-    in_support      = in_support,
-    R_effective     = R_effective
+  structure(
+    list(
+      x_grid      = x_grid,
+      f_hat       = f_hat,
+      bs_mean     = bs_mean,
+      curves      = curves,
+      median      = apply(curves, 1, safe_median),
+      lower       = q025,
+      upper       = q975,
+      lower_basic = 2 * f_hat - q975,
+      upper_basic = 2 * f_hat - q025,
+      f_bc        = 2 * f_hat - bs_mean,
+      sigma_w_sq_boot = sigma_w_sq_boot,
+      omega_boot      = omega_boot,
+      in_support      = in_support,
+      R_effective     = R_effective,
+      x_ref           = x_ref
+    ),
+    class = "two_stage_bootstrap"
   )
+}
+
+#' Summarise a two-stage bootstrap SIMEX dose-response fit
+#'
+#' Returns a tabular summary of the SIMEX-corrected dose-response curve and its
+#' bootstrap confidence interval, together with the configuration that produced
+#' it. The headline table reports the point estimate and 95% percentile interval
+#' at quantiles of the exposure grid; the configuration block reports the
+#' replicate yield, the exposure range and curve anchor, and the spread of the
+#' Phase-1 `sigma_w_sq` across the replicates whose calibration succeeded.
+#'
+#' @param object A [two_stage_bootstrap()] fit.
+#' @param probs Quantiles of `x_grid` at which to report the curve and its CI.
+#'   Default `c(0.05, 0.25, 0.50, 0.75, 0.95)`.
+#' @param ... Unused.
+#'
+#' @return An object of class `"summary.two_stage_bootstrap"` with a `table`
+#'   element and summary fields. Has a `print` method.
+#'
+#' @export
+summary.two_stage_bootstrap <- function(object,
+                                        probs = c(0.05, 0.25, 0.50, 0.75, 0.95),
+                                        ...) {
+  qs <- as.numeric(quantile(object$x_grid, probs))
+  approx_curve <- function(yv) {
+    ok <- is.finite(yv)
+    if (sum(ok) < 2L) return(rep(NA_real_, length(qs)))
+    stats::approx(object$x_grid[ok], yv[ok], xout = qs)$y
+  }
+  tab <- rbind(
+    x     = qs,
+    SIMEX = approx_curve(object$f_hat),
+    lower = approx_curve(object$lower),
+    upper = approx_curve(object$upper)
+  )
+  colnames(tab) <- sprintf("%g%%", 100 * probs)
+
+  # Failed replicates leave sigma_w_sq_boot at its initialised 0; a genuine ME
+  # variance is strictly positive, so summarise only the positive finite entries
+  # (the replicates whose Phase-1 calibration succeeded - a superset of the
+  # curve-producing R_effective).
+  sw <- object$sigma_w_sq_boot
+  sw <- sw[is.finite(sw) & sw > 0]
+  sigma_w_sq <- if (length(sw))
+    c(mean = mean(sw), min = min(sw), max = max(sw)) else NULL
+
+  anchor <- if (is.null(object$x_ref))
+    sprintf("first grid point (x = %.4g)", object$x_grid[1])
+  else
+    sprintf("x_ref = %.4g", object$x_ref)
+
+  out <- list(
+    R                = ncol(object$curves),
+    R_effective      = object$R_effective,
+    n_grid           = length(object$x_grid),
+    x_range          = range(object$x_grid),
+    anchor           = anchor,
+    sigma_w_sq       = sigma_w_sq,
+    n_calibrations   = length(sw),
+    n_out_of_support = if (is.null(object$in_support)) 0L else sum(!object$in_support),
+    table            = tab
+  )
+  class(out) <- "summary.two_stage_bootstrap"
+  out
+}
+
+#' @export
+print.summary.two_stage_bootstrap <- function(x, digits = 3, ...) {
+  cat("Two-stage bootstrap SIMEX-corrected dose-response\n\n")
+  cat("Configuration:\n")
+  cat(sprintf("  Replicates:      %-20s Grid points: %d\n",
+              sprintf("%d of %d effective", x$R_effective, x$R), x$n_grid))
+  cat(sprintf("  Exposure range:  [%.3f, %.3f]\n", x$x_range[1], x$x_range[2]))
+  cat(sprintf("  Anchored at:     %s\n", x$anchor))
+  if (!is.null(x$sigma_w_sq))
+    cat(sprintf("  sigma_w_sq:      mean %.4f (range %.4f-%.4f, %d calibrations)\n",
+                x$sigma_w_sq[["mean"]], x$sigma_w_sq[["min"]],
+                x$sigma_w_sq[["max"]], x$n_calibrations))
+  else
+    cat("  sigma_w_sq:      unavailable (no calibration succeeded)\n")
+  if (x$n_out_of_support > 0L)
+    cat(sprintf("  Out of support:  %d of %d grid points flagged\n",
+                x$n_out_of_support, x$n_grid))
+  cat("\nCorrected curve with 95% percentile CI (log time ratio):\n")
+  print(round(x$table, digits))
+  if (x$R_effective == 0L)
+    cat("\nNotes: all replicates failed; CI summaries are NA.\n")
+  invisible(x)
 }
