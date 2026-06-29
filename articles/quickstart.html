@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -277,6 +277,27 @@ same extrapolation scheme.</li>
 <span>  x_grid     <span class="op">=</span> <span class="va">x_grid</span>,</span>
 <span>  verbose    <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<p>Calling <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> on the returned object reports the
+replicate yield, the exposure grid and anchor, the Phase-1
+<code>sigma_w_sq</code> spread across the bootstrap calibrations, and
+the corrected curve with its 95% percentile interval at quantiles of the
+exposure grid:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">boot</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Two-stage bootstrap SIMEX-corrected dose-response</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Configuration:</span></span>
+<span><span class="co">#&gt;   Replicates:      50 of 50 effective   Grid points: 50</span></span>
+<span><span class="co">#&gt;   Exposure range:  [4.578, 6.827]</span></span>
+<span><span class="co">#&gt;   Anchored at:     first grid point (x = 4.578)</span></span>
+<span><span class="co">#&gt;   sigma_w_sq:      mean 0.1049 (range 0.0812-0.1299, 50 calibrations)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Corrected curve with 95% percentile CI (log time ratio):</span></span>
+<span><span class="co">#&gt;           5%    25%   50%    75%   95%</span></span>
+<span><span class="co">#&gt; x      4.690  5.140 5.702  6.265 6.715</span></span>
+<span><span class="co">#&gt; SIMEX  0.027  0.184 0.443  0.354 0.460</span></span>
+<span><span class="co">#&gt; lower -0.109 -0.302 0.032 -0.066 0.026</span></span>
+<span><span class="co">#&gt; upper  0.124  0.517 0.661  0.593 0.772</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="plot-with-the-bootstrap-confidence-band">Plot with the bootstrap confidence band<a class="anchor" aria-label="anchor" href="#plot-with-the-bootstrap-confidence-band"></a>
@@ -288,7 +309,7 @@ The point estimate <code>s$curve_simex</code> and the bootstrap
 <code>boot$f_hat</code> are essentially identical (both are single SIMEX
 runs on the full sample, differing only by RNG state); we plot
 <code>s</code> here to keep the example self-contained.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">s</span>, truth <span class="op">=</span> <span class="va">truth</span>,</span>
 <span>     ci <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="va">boot</span><span class="op">$</span><span class="va">lower</span>, upper <span class="op">=</span> <span class="va">boot</span><span class="op">$</span><span class="va">upper</span><span class="op">)</span>,</span>
 <span>     title <span class="op">=</span> <span class="st">"SIMEX-corrected dose-response with two-stage bootstrap CI"</span><span class="op">)</span></span></code></pre></div>

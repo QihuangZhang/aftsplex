@@ -151,7 +151,9 @@ two_stage_bootstrap(
 
 ## Value
 
-A list with elements
+An object of class `"two_stage_bootstrap"` (a list, with a
+[summary()](https://qihuangzhang.github.io/aftsplex/reference/summary.two_stage_bootstrap.md)
+method) with elements
 
 - `x_grid` exposure grid,
 
@@ -172,7 +174,9 @@ A list with elements
 
 - `in_support` logical support flag (or `NULL`),
 
-- `R_effective` number of replicates that produced a curve.
+- `R_effective` number of replicates that produced a curve,
+
+- `x_ref` the reference exposure used to anchor the curves (or `NULL`).
 
 The percentile CI is the primary interval; the basic
 (reverse-percentile) CI is kept for completeness but does not improve

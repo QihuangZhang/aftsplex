@@ -25,7 +25,7 @@ corrected curve.
 
     <a class="navbar-brand me-2" href="../index.html">aftsplex</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -201,7 +201,8 @@ Default <code>"lognormal"</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A list with elements</p><ul><li><p><code>x_grid</code> exposure grid,</p></li>
+    <p>An object of class <code>"two_stage_bootstrap"</code> (a list, with a
+<a href="summary.two_stage_bootstrap.html">summary()</a> method) with elements</p><ul><li><p><code>x_grid</code> exposure grid,</p></li>
 <li><p><code>f_hat</code> single-fit SIMEX point estimate (full-sample, no resampling),</p></li>
 <li><p><code>bs_mean</code> mean of the bootstrap curves,</p></li>
 <li><p><code>curves</code> matrix of bootstrap curves (<code>length(x_grid)</code> rows by <code>R</code> cols),</p></li>
@@ -210,7 +211,8 @@ Default <code>"lognormal"</code>.</p></dd>
 <li><p><code>f_bc</code> bias-corrected point estimate <code>2*f_hat - bs_mean</code>,</p></li>
 <li><p><code>sigma_w_sq_boot, omega_boot</code> per-replicate Phase-1 summaries,</p></li>
 <li><p><code>in_support</code> logical support flag (or <code>NULL</code>),</p></li>
-<li><p><code>R_effective</code> number of replicates that produced a curve.</p></li>
+<li><p><code>R_effective</code> number of replicates that produced a curve,</p></li>
+<li><p><code>x_ref</code> the reference exposure used to anchor the curves (or <code>NULL</code>).</p></li>
 </ul><p>The percentile CI is the primary interval; the basic (reverse-percentile)
 CI is kept for completeness but does not improve coverage on simulated
 diminishing-returns curves because the dominant residual bias is from

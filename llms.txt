@@ -131,6 +131,8 @@ The estimator pipeline.
 
 - [`two_stage_bootstrap()`](https://qihuangzhang.github.io/aftsplex/reference/two_stage_bootstrap.md)
   : Two-stage nonparametric bootstrap for the SIMEX-corrected curve
+- [`summary(`*`<two_stage_bootstrap>`*`)`](https://qihuangzhang.github.io/aftsplex/reference/summary.two_stage_bootstrap.md)
+  : Summarise a two-stage bootstrap SIMEX dose-response fit
 
 ## Evaluation and visualisation
 

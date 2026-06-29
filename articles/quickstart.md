@@ -217,6 +217,31 @@ boot <- two_stage_bootstrap(
 )
 ```
 
+Calling [`summary()`](https://rdrr.io/r/base/summary.html) on the
+returned object reports the replicate yield, the exposure grid and
+anchor, the Phase-1 `sigma_w_sq` spread across the bootstrap
+calibrations, and the corrected curve with its 95% percentile interval
+at quantiles of the exposure grid:
+
+``` r
+
+summary(boot)
+#> Two-stage bootstrap SIMEX-corrected dose-response
+#> 
+#> Configuration:
+#>   Replicates:      50 of 50 effective   Grid points: 50
+#>   Exposure range:  [4.578, 6.827]
+#>   Anchored at:     first grid point (x = 4.578)
+#>   sigma_w_sq:      mean 0.1049 (range 0.0812-0.1299, 50 calibrations)
+#> 
+#> Corrected curve with 95% percentile CI (log time ratio):
+#>           5%    25%   50%    75%   95%
+#> x      4.690  5.140 5.702  6.265 6.715
+#> SIMEX  0.027  0.184 0.443  0.354 0.460
+#> lower -0.109 -0.302 0.032 -0.066 0.026
+#> upper  0.124  0.517 0.661  0.593 0.772
+```
+
 ## Plot with the bootstrap confidence band
 
 The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method on
